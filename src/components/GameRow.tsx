@@ -25,9 +25,9 @@ export function GameRow({ game, selected, onSelect }: GameRowProps) {
         <span className="absolute inset-y-1 left-0 w-[2px] rounded-r-full bg-accent" />
       )}
       <GameArt
-        src={game.headerUrl}
+        sources={game.coverUrls}
         name={game.name}
-        className="h-10 w-[72px]"
+        className="aspect-[460/215] w-[72px]"
         labelClassName="text-[11px]"
       />
       <span className="min-w-0 flex-1">

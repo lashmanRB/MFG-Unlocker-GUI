@@ -1,17 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "../lib/cn";
 import { initials } from "../lib/format";
 
 interface GameArtProps {
-  src: string | null;
+  sources: string[];
   name: string;
   className?: string;
   labelClassName?: string;
 }
 
-export function GameArt({ src, name, className, labelClassName }: GameArtProps) {
-  const [failedSrc, setFailedSrc] = useState<string | null>(null);
-  const imageSrc = src !== null && src.length > 0 && src !== failedSrc ? src : null;
+export function GameArt({ sources, name, className, labelClassName }: GameArtProps) {
+  const [index, setIndex] = useState(0);
+  const first = sources[0] ?? "";
+
+  // the same slot is reused when another game is selected
+  useEffect(() => {
+    setIndex(0);
+  }, [first]);
+
+  const src = index < sources.length ? sources[index] : null;
 
   return (
     <div
@@ -20,7 +27,7 @@ export function GameArt({ src, name, className, labelClassName }: GameArtProps) 
         className,
       )}
     >
-      {imageSrc === null ? (
+      {src === null ? (
         <div
           aria-hidden="true"
           className={cn(
@@ -32,12 +39,12 @@ export function GameArt({ src, name, className, labelClassName }: GameArtProps) 
         </div>
       ) : (
         <img
-          src={imageSrc}
+          src={src}
           alt=""
           draggable={false}
           loading="lazy"
-          onError={() => setFailedSrc(imageSrc)}
-          className="h-full w-full object-cover"
+          onError={() => setIndex((current) => current + 1)}
+          className="h-full w-full object-contain"
         />
       )}
     </div>

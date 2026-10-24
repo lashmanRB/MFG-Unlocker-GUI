@@ -27,9 +27,9 @@ export function GameHeader({
     <header className="shrink-0 border-b border-line px-4 pt-3 pb-3">
       <div className="flex items-start gap-3.5">
         <GameArt
-          src={game.headerUrl}
+          sources={game.coverUrls}
           name={game.name}
-          className="hidden aspect-video w-[176px] @md:block @3xl:w-[238px]"
+          className="hidden aspect-[460/215] w-[176px] @md:block @3xl:w-[238px]"
           labelClassName="text-[19px]"
         />
 

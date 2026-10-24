@@ -65,7 +65,9 @@ pub struct GameEntry {
     pub exe_candidates: Vec<ExeCandidate>,
     pub compat: CompatReport,
     pub install: Option<InstallInfo>,
-    pub header_url: Option<String>,
+    // Cover art candidates in the order the UI should try them. Newer titles often
+    // have no header.jpg, only the hero art.
+    pub cover_urls: Vec<String>,
     pub size_on_disk: Option<u64>,
     pub library_path: Option<String>,
 }

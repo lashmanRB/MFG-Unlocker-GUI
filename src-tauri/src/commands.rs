@@ -22,8 +22,16 @@ fn game_id_for(install_dir: &Path) -> String {
     format!("game:{}", normalize_path(&install_dir.to_string_lossy()))
 }
 
-fn header_url(app_id: Option<u32>) -> Option<String> {
-    app_id.map(|id| format!("https://cdn.akamai.steamstatic.com/steam/apps/{id}/header.jpg"))
+// Steam ships a 460x215 header for most titles, a store capsule for some and only
+// hero art for the newest ones. The UI walks this list until one loads.
+fn cover_urls(app_id: Option<u32>) -> Vec<String> {
+    let Some(id) = app_id else {
+        return Vec::new();
+    };
+    ["header.jpg", "capsule_616x353.jpg", "library_hero.jpg"]
+        .iter()
+        .map(|name| format!("https://cdn.akamai.steamstatic.com/steam/apps/{id}/{name}"))
+        .collect()
 }
 
 fn folder_name(path: &Path) -> String {
@@ -96,7 +104,7 @@ fn make_entry(
             .collect(),
         compat: report,
         install: stored.and_then(StoredGame::install_info),
-        header_url: header_url(app_id),
+        cover_urls: cover_urls(app_id),
         size_on_disk: size,
         library_path: library,
     }

@@ -60,7 +60,7 @@ export interface GameEntry {
   exeCandidates: ExeCandidate[];
   compat: CompatReport;
   install: InstallInfo | null;
-  headerUrl: string | null;
+  coverUrls: string[];
   sizeOnDisk: number | null;
   libraryPath: string | null;
 }

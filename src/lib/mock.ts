@@ -66,11 +66,18 @@ interface GameSeed {
   installDir: string;
   workDir?: string;
   exeCandidates?: ExeCandidate[];
-  headerUrl?: string | null;
+  coverUrls?: string[];
   libraryPath?: string | null;
   sizeOnDisk?: number | null;
   compat?: Partial<CompatReport>;
   install?: InstallInfo | null;
+}
+
+function coverUrlsFor(appId: number | null): string[] {
+  if (appId === null) return [];
+  return ["header.jpg", "capsule_616x353.jpg", "library_hero.jpg"].map(
+    (name) => `https://cdn.akamai.steamstatic.com/steam/apps/${appId}/${name}`,
+  );
 }
 
 function makeGame(seed: GameSeed): GameEntry {
@@ -87,12 +94,7 @@ function makeGame(seed: GameSeed): GameEntry {
     exeCandidates: candidates,
     compat: { ...baseCompat, ...seed.compat },
     install: seed.install ?? null,
-    headerUrl:
-      seed.headerUrl === undefined
-        ? seed.appId === null
-          ? null
-          : `https://cdn.akamai.steamstatic.com/steam/apps/${seed.appId}/header.jpg`
-        : seed.headerUrl,
+    coverUrls: seed.coverUrls ?? coverUrlsFor(seed.appId),
     sizeOnDisk: seed.sizeOnDisk === undefined ? 74_000_000_000 : seed.sizeOnDisk,
     libraryPath: seed.libraryPath === undefined ? "D:\\SteamLibrary" : seed.libraryPath,
   };
@@ -199,7 +201,7 @@ const manualGames: GameEntry[] = [
     installDir: "E:\\Games\\Trepang2",
     libraryPath: null,
     sizeOnDisk: null,
-    headerUrl: null,
+    coverUrls: [],
     compat: { state: "likely", hasFrameGen: true, hasStreamline: false },
   }),
 ];
@@ -443,7 +445,7 @@ export const mock = {
       installDir: trimmed,
       libraryPath: null,
       sizeOnDisk: null,
-      headerUrl: null,
+      coverUrls: [],
       compat: { state: "likely", hasFrameGen: true, hasStreamline: false },
     });
     manualGames.push(entry);
