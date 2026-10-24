@@ -103,7 +103,7 @@ export function LeftRail({
           )}
         </div>
 
-        <div className="flex rounded-[5px] border border-line bg-base p-0.5">
+        <div className="grid grid-cols-2 gap-1 rounded-[5px] border border-line bg-base p-1">
           {options.map((option) => {
             const active = option.value === filter;
             return (
@@ -111,9 +111,10 @@ export function LeftRail({
                 key={option.value}
                 type="button"
                 aria-pressed={active}
+                title={`${option.label}: ${option.count} games`}
                 onClick={() => setFilter(option.value)}
                 className={cn(
-                  "flex h-6 flex-1 items-center justify-center gap-1 rounded-[4px] text-[11.5px] font-medium transition-[background-color,color,box-shadow] duration-150 ease-out max-[920px]:gap-0.5 max-[920px]:text-[11px]",
+                  "flex h-6 items-center justify-center gap-1 rounded-[4px] text-[11.5px] font-medium transition-[background-color,color,box-shadow] duration-150 ease-out max-[920px]:gap-0.5 max-[920px]:text-[11px]",
                   active
                     ? "bg-elevated text-ink shadow-[inset_0_0_0_1px_var(--color-line-strong)]"
                     : "text-ink-dim hover:text-ink-muted",
