@@ -10,24 +10,14 @@
     "frontendDist": "../dist"
   },
   "app": {
-    "windows": [
-      {
-        "title": "MFG Unlocker GUI",
-        "width": 1200,
-        "height": 780,
-        "minWidth": 960,
-        "minHeight": 620,
-        "center": true,
-        "theme": "Dark"
-      }
-    ],
+    "windows": [],
     "security": {
       "csp": null
     }
   },
   "bundle": {
-    "active": true,
-    "targets": ["nsis"],
+    "active": false,
+    "targets": [],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

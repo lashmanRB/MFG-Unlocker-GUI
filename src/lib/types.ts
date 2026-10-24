@@ -84,6 +84,20 @@ export interface ReleaseInfo {
   cachedDllPath: string | null;
 }
 
+export interface UpdatedGame {
+  gameId: string;
+  name: string;
+  from: string | null;
+  to: string;
+}
+
+export interface AutoUpdateReport {
+  release: ReleaseInfo | null;
+  downloaded: boolean;
+  updated: UpdatedGame[];
+  failed: string[];
+}
+
 export type MfgMode = "follow" | "fixed" | "dynamic";
 
 export interface GameSettings {

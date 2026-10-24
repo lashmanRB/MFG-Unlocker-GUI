@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
   ApplyResult,
+  AutoUpdateReport,
   GameEntry,
   GameSettings,
   InstallInfo,
@@ -40,6 +41,9 @@ export const api = {
 
   releaseInfo: (refresh: boolean): Promise<ReleaseInfo> =>
     isTauri ? invoke<ReleaseInfo>("release_info", { refresh }) : mock.releaseInfo(refresh),
+
+  autoUpdate: (refresh: boolean): Promise<AutoUpdateReport> =>
+    isTauri ? invoke<AutoUpdateReport>("auto_update", { refresh }) : mock.autoUpdate(refresh),
 
   readSettings: (gameId: string): Promise<GameSettings> =>
     isTauri ? invoke<GameSettings>("read_settings", { gameId }) : mock.readSettings(gameId),

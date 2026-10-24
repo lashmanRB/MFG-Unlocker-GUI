@@ -191,6 +191,24 @@ pub struct LogFile {
 
 #[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct UpdatedGame {
+    pub game_id: String,
+    pub name: String,
+    pub from: Option<String>,
+    pub to: String,
+}
+
+#[derive(Serialize, Clone, Debug, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct AutoUpdateReport {
+    pub release: Option<ReleaseInfo>,
+    pub downloaded: bool,
+    pub updated: Vec<UpdatedGame>,
+    pub failed: Vec<String>,
+}
+
+#[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct ApplyResult {
     pub ok: bool,
     pub warnings: Vec<String>,

@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { api } from "../lib/api";
 import { attempt } from "../lib/attempt";
-import type { GameEntry, ReleaseInfo } from "../lib/types";
+import type { AutoUpdateReport, GameEntry, ReleaseInfo } from "../lib/types";
 import { Button } from "../components/Button";
 import { Dialog } from "../components/Dialog";
 import { FooterBar } from "../components/FooterBar";
@@ -10,6 +10,7 @@ import { LeftRail } from "../components/LeftRail";
 import { TopBar } from "../components/TopBar";
 import { WorkspaceSkeleton } from "../components/Skeletons";
 import { useScan } from "../hooks/useScan";
+import { useToast } from "../hooks/useToast";
 import { useZoom } from "../hooks/useZoom";
 import { NoGamesState, NoSteamState, ScanErrorState } from "./EmptyStates";
 import { WorkspaceScreen } from "./WorkspaceScreen";
@@ -32,6 +33,7 @@ function compareGames(a: GameEntry, b: GameEntry): number {
 
 export default function MainScreen() {
   const { result, phase, error, busy, rescan, addGame, updateGame } = useScan();
+  const toast = useToast();
   const zoom = useZoom();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [release, setRelease] = useState<ReleaseInfo | null>(null);
@@ -39,6 +41,8 @@ export default function MainScreen() {
   const [settingsDirty, setSettingsDirty] = useState(false);
   const [settingsEpoch, setSettingsEpoch] = useState(0);
   const [pending, setPending] = useState<PendingIntent | null>(null);
+  const autoUpdateStarted = useRef(false);
+  const autoUpdateBusy = useRef(false);
 
   const games = useMemo(
     () =>
@@ -52,17 +56,65 @@ export default function MainScreen() {
   const adding = busy === "add";
   const loading = phase === "loading" && result === null;
 
-  useEffect(() => {
-    let alive = true;
-    void attempt(() => api.releaseInfo(false)).then((response) => {
-      if (!alive) return;
-      if (response.ok) setRelease(response.value);
+  const applyAutoUpdate = useCallback(
+    async (report: AutoUpdateReport) => {
+      if (report.release !== null) {
+        setRelease(report.release);
+        setReleaseFailed(false);
+      } else {
+        setReleaseFailed(true);
+      }
+
+      if (report.updated.length > 0) {
+        const refreshed = await Promise.all(
+          report.updated.map((item) => attempt(() => api.rescanGame(item.gameId))),
+        );
+        for (const response of refreshed) {
+          if (response.ok) updateGame(response.value);
+        }
+      }
+
+      if (report.updated.length === 1) {
+        toast("ok", `Mod updated to ${report.updated[0].to}`);
+      } else if (report.updated.length > 1) {
+        toast("ok", `${report.updated.length} games updated to ${report.updated[0].to}`);
+      } else if (report.downloaded) {
+        const tag = report.release?.tag;
+        toast(
+          "info",
+          tag === undefined ? "Downloaded the newest MFG Unlocker build" : `Downloaded MFG Unlocker ${tag}`,
+        );
+      }
+
+      if (report.failed.length > 0) {
+        const first = report.failed[0];
+        const extra = report.failed.length > 2 ? ` (+${report.failed.length - 1} more)` : "";
+        toast("warn", `${first}${extra}`);
+      }
+    },
+    [toast, updateGame],
+  );
+
+  const runAutoUpdate = useCallback(
+    async (refresh: boolean) => {
+      if (autoUpdateBusy.current) return;
+      autoUpdateBusy.current = true;
+      const response = await attempt(() => api.autoUpdate(refresh));
+      if (response.ok) await applyAutoUpdate(response.value);
       else setReleaseFailed(true);
-    });
-    return () => {
-      alive = false;
-    };
-  }, []);
+      autoUpdateBusy.current = false;
+    },
+    [applyAutoUpdate],
+  );
+
+  // release check runs once the first scan settles, so updated install entries
+  // are merged into a list that already exists
+  useEffect(() => {
+    if (autoUpdateStarted.current) return;
+    if (phase === "loading") return;
+    autoUpdateStarted.current = true;
+    void runAutoUpdate(true);
+  }, [phase, runAutoUpdate]);
 
   useEffect(() => {
     setSelectedId((current) => {
@@ -84,12 +136,17 @@ export default function MainScreen() {
     void runAdd();
   };
 
+  const scanAndCheckReleases = useCallback(async () => {
+    await rescan();
+    await runAutoUpdate(false);
+  }, [rescan, runAutoUpdate]);
+
   const runRescan = () => {
     if (settingsDirty) {
       setPending({ kind: "rescan" });
       return;
     }
-    void rescan();
+    void scanAndCheckReleases();
   };
 
   const selectGame = (id: string) => {
@@ -112,7 +169,7 @@ export default function MainScreen() {
       void runAdd();
     } else {
       setSettingsEpoch((current) => current + 1);
-      void rescan();
+      void scanAndCheckReleases();
     }
   };
 

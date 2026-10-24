@@ -2,25 +2,20 @@ use crate::compat;
 use crate::gamedir;
 use crate::install;
 use crate::model::{
-    normalize_path, ApplyResult, ExeCandidate, GameEntry, GameSettings, InstallInfo, LogFile,
-    ReleaseInfo, ScanResult, StatusSummary, SteamLibrary, SteamScan, StoredGame, Store, LOG_PREFIX,
+    normalize_path, ApplyResult, AutoUpdateReport, ExeCandidate, GameEntry, GameSettings,
+    InstallInfo, LogFile, ReleaseInfo, ScanResult, StatusSummary, SteamLibrary, SteamScan,
+    StoredGame, Store, UpdatedGame, LOG_PREFIX,
 };
+use crate::portable;
 use crate::release;
 use crate::settings;
 use crate::status;
 use crate::steam;
 use crate::store;
 use std::path::{Path, PathBuf};
-use tauri::{AppHandle, Manager};
 
 const WORKERS: usize = 6;
 const MAX_EXES: usize = 24;
-
-fn data_dir(app: &AppHandle) -> Result<PathBuf, String> {
-    let dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
-    std::fs::create_dir_all(&dir).map_err(|e| format!("cannot create {}: {e}", dir.display()))?;
-    Ok(dir)
-}
 
 fn game_id_for(install_dir: &Path) -> String {
     format!("game:{}", normalize_path(&install_dir.to_string_lossy()))
@@ -107,6 +102,7 @@ fn record_from_entry(entry: &GameEntry, previous: Option<&StoredGame>) -> Stored
         record.sha256 = old.sha256.clone();
         record.bink_backup = old.bink_backup.clone();
         record.installed_at = old.installed_at;
+        record.previous = old.previous.clone();
     }
     record
 }
@@ -155,8 +151,8 @@ where
     })
 }
 
-fn scan_blocking(app: &AppHandle) -> Result<ScanResult, String> {
-    let dir = data_dir(app)?;
+fn scan_blocking() -> Result<ScanResult, String> {
+    let dir = portable::data_dir()?;
     let mut store = store::load(&dir);
     let mut errors = Vec::new();
     let mut libraries = Vec::new();
@@ -295,16 +291,16 @@ fn scan_blocking(app: &AppHandle) -> Result<ScanResult, String> {
 }
 
 #[tauri::command]
-pub async fn scan_all(app: AppHandle) -> Result<ScanResult, String> {
-    tauri::async_runtime::spawn_blocking(move || scan_blocking(&app))
+pub async fn scan_all() -> Result<ScanResult, String> {
+    tauri::async_runtime::spawn_blocking(scan_blocking)
         .await
         .map_err(|error| error.to_string())?
 }
 
 #[tauri::command]
-pub async fn rescan_game(app: AppHandle, game_id: String) -> Result<GameEntry, String> {
+pub async fn rescan_game(game_id: String) -> Result<GameEntry, String> {
     tauri::async_runtime::spawn_blocking(move || {
-        let dir = data_dir(&app)?;
+        let dir = portable::data_dir()?;
         let current = store::load(&dir);
         let record = find_record(&current, &game_id)?;
         let install_dir = existing_dir(&record)?;
@@ -323,7 +319,7 @@ pub async fn rescan_game(app: AppHandle, game_id: String) -> Result<GameEntry, S
 }
 
 #[tauri::command]
-pub async fn add_manual_game(app: AppHandle, path: String) -> Result<GameEntry, String> {
+pub async fn add_manual_game(path: String) -> Result<GameEntry, String> {
     tauri::async_runtime::spawn_blocking(move || {
         let install_dir = PathBuf::from(&path);
         if !install_dir.is_dir() {
@@ -331,7 +327,7 @@ pub async fn add_manual_game(app: AppHandle, path: String) -> Result<GameEntry, 
         }
         let name = folder_name(&install_dir);
         let entry = make_entry(&name, "manual", None, &install_dir, None, None, None);
-        let dir = data_dir(&app)?;
+        let dir = portable::data_dir()?;
         let mut current = store::load(&dir);
         let record = record_from_entry(&entry, None);
         store::upsert(&mut current, record);
@@ -343,8 +339,8 @@ pub async fn add_manual_game(app: AppHandle, path: String) -> Result<GameEntry, 
 }
 
 #[tauri::command(async)]
-pub fn forget_game(app: AppHandle, game_id: String) -> Result<(), String> {
-    let dir = data_dir(&app)?;
+pub fn forget_game(game_id: String) -> Result<(), String> {
+    let dir = portable::data_dir()?;
     let mut current = store::load(&dir);
     if !store::remove(&mut current, &game_id) {
         return Err("Unknown game.".to_string());
@@ -353,16 +349,12 @@ pub fn forget_game(app: AppHandle, game_id: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn set_game_exe(
-    app: AppHandle,
-    game_id: String,
-    exe_path: String,
-) -> Result<GameEntry, String> {
+pub async fn set_game_exe(game_id: String, exe_path: String) -> Result<GameEntry, String> {
     tauri::async_runtime::spawn_blocking(move || {
         if !Path::new(&exe_path).is_file() {
             return Err("That executable does not exist.".to_string());
         }
-        let dir = data_dir(&app)?;
+        let dir = portable::data_dir()?;
         let mut current = store::load(&dir);
         let mut record = find_record(&current, &game_id)?;
         let install_dir = existing_dir(&record)?;
@@ -466,13 +458,12 @@ fn uninstall_at(dir: &Path, game_id: &str) -> Result<(), String> {
 
 #[tauri::command]
 pub async fn install_mod(
-    app: AppHandle,
     game_id: String,
     dll_name: String,
     bink: bool,
 ) -> Result<InstallInfo, String> {
     tauri::async_runtime::spawn_blocking(move || {
-        let dir = data_dir(&app)?;
+        let dir = portable::data_dir()?;
         install_at(&dir, &game_id, &dll_name, bink)
     })
     .await
@@ -480,9 +471,9 @@ pub async fn install_mod(
 }
 
 #[tauri::command]
-pub async fn uninstall_mod(app: AppHandle, game_id: String) -> Result<(), String> {
+pub async fn uninstall_mod(game_id: String) -> Result<(), String> {
     tauri::async_runtime::spawn_blocking(move || {
-        let dir = data_dir(&app)?;
+        let dir = portable::data_dir()?;
         uninstall_at(&dir, &game_id)
     })
     .await
@@ -490,10 +481,73 @@ pub async fn uninstall_mod(app: AppHandle, game_id: String) -> Result<(), String
 }
 
 #[tauri::command]
-pub async fn release_info(app: AppHandle, refresh: bool) -> Result<ReleaseInfo, String> {
+pub async fn release_info(refresh: bool) -> Result<ReleaseInfo, String> {
     tauri::async_runtime::spawn_blocking(move || {
-        let dir = data_dir(&app)?;
+        let dir = portable::data_dir()?;
         release::latest_info(&dir, refresh)
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
+fn auto_update_at(dir: &Path, refresh: bool) -> AutoUpdateReport {
+    let mut report = AutoUpdateReport::default();
+
+    let latest = match release::latest_info(dir, refresh) {
+        Ok(latest) => latest,
+        Err(message) => {
+            report.failed.push(message);
+            return report;
+        }
+    };
+    report.release = Some(latest.clone());
+
+    let had_download = release::cached_release(dir).is_none();
+    if let Err(message) = release::ensure_dll(dir, false) {
+        report.failed.push(message);
+        return report;
+    }
+    report.downloaded = had_download;
+
+    let store = store::load(dir);
+    let stale: Vec<(String, String, String, bool)> = store
+        .games
+        .iter()
+        .filter(|record| record.dll_name.is_some())
+        .filter(|record| record.version.as_deref() != Some(latest.tag.as_str()))
+        .filter_map(|record| {
+            let dll = record.dll_name.clone()?;
+            let bink = matches!(dll.as_str(), "binkw64.dll" | "bink2w64.dll");
+            Some((record.id.clone(), record.name.clone(), dll, bink))
+        })
+        .collect();
+
+    for (game_id, name, dll, bink) in stale {
+        let from = store
+            .games
+            .iter()
+            .find(|record| record.id == game_id)
+            .and_then(|record| record.version.clone());
+        match install_at(dir, &game_id, &dll, bink) {
+            Ok(_) => report.updated.push(UpdatedGame {
+                game_id,
+                name,
+                from,
+                to: latest.tag.clone(),
+            }),
+            // A running game holds the DLL open, so this waits for the next start.
+            Err(message) => report.failed.push(format!("{name}: {message}")),
+        }
+    }
+
+    report
+}
+
+#[tauri::command]
+pub async fn auto_update(refresh: bool) -> Result<AutoUpdateReport, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let dir = portable::data_dir()?;
+        Ok(auto_update_at(&dir, refresh))
     })
     .await
     .map_err(|error| error.to_string())?
@@ -506,32 +560,28 @@ fn work_dir_in(dir: &Path, game_id: &str) -> Result<PathBuf, String> {
     Ok(exe_dir_of(record.exe_path.as_deref()).unwrap_or(install_dir))
 }
 
-fn work_dir_for(app: &AppHandle, game_id: &str) -> Result<PathBuf, String> {
-    work_dir_in(&data_dir(app)?, game_id)
+fn game_work_dir(game_id: &str) -> Result<PathBuf, String> {
+    work_dir_in(&portable::data_dir()?, game_id)
 }
 
 #[tauri::command(async)]
-pub fn read_settings(app: AppHandle, game_id: String) -> Result<GameSettings, String> {
-    settings::read(&work_dir_for(&app, &game_id)?)
+pub fn read_settings(game_id: String) -> Result<GameSettings, String> {
+    settings::read(&game_work_dir(&game_id)?)
 }
 
 #[tauri::command(async)]
-pub fn write_settings(
-    app: AppHandle,
-    game_id: String,
-    settings: GameSettings,
-) -> Result<ApplyResult, String> {
-    settings::write(&work_dir_for(&app, &game_id)?, &settings)
+pub fn write_settings(game_id: String, settings: GameSettings) -> Result<ApplyResult, String> {
+    settings::write(&game_work_dir(&game_id)?, &settings)
 }
 
 #[tauri::command(async)]
-pub fn read_status(app: AppHandle, game_id: String) -> Result<Option<StatusSummary>, String> {
-    Ok(status::read(&work_dir_for(&app, &game_id)?))
+pub fn read_status(game_id: String) -> Result<Option<StatusSummary>, String> {
+    Ok(status::read(&game_work_dir(&game_id)?))
 }
 
 #[tauri::command(async)]
-pub fn list_logs(app: AppHandle, game_id: String) -> Result<Vec<LogFile>, String> {
-    let work = work_dir_for(&app, &game_id)?;
+pub fn list_logs(game_id: String) -> Result<Vec<LogFile>, String> {
+    let work = game_work_dir(&game_id)?;
     let mut logs = Vec::new();
     let Ok(entries) = std::fs::read_dir(&work) else {
         return Ok(logs);
@@ -576,8 +626,8 @@ pub fn read_log(path: String, max_bytes: Option<u64>) -> Result<String, String> 
 }
 
 #[tauri::command(async)]
-pub fn launch_game(app: AppHandle, game_id: String) -> Result<(), String> {
-    let dir = data_dir(&app)?;
+pub fn launch_game(game_id: String) -> Result<(), String> {
+    let dir = portable::data_dir()?;
     let current = store::load(&dir);
     let record = find_record(&current, &game_id)?;
     let exe = record
@@ -716,6 +766,49 @@ mod tests {
         uninstall_at(&data, &id).unwrap();
         assert!(!work.join("winmm.dll").exists());
         assert!(find_record(&store::load(&data), &id).unwrap().dll_name.is_none());
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn an_older_install_is_updated_to_the_newest_release() {
+        let root = scratch("autoupdate");
+        let data = root.join("data");
+        let game_dir = root.join("game");
+        fs::create_dir_all(&data).unwrap();
+        seed_release(&data, "v2.0.0", b"MZ newest build RTXMFG\n");
+        let id = seed_game(&data, &game_dir);
+        let work = work_dir_in(&data, &id).unwrap();
+
+        // an install left over from the previous release
+        fs::write(work.join("winmm.dll"), b"MZ older build RTXMFG\n").unwrap();
+        let mut current = store::load(&data);
+        let mut record = find_record(&current, &id).unwrap();
+        record.dll_name = Some("winmm.dll".into());
+        record.version = Some("v1.0.0".into());
+        record.sha256 = Some(release::sha256_file(&work.join("winmm.dll")).unwrap());
+        record.installed_at = Some(1);
+        record.previous = None;
+        store::upsert(&mut current, record);
+        store::save(&data, &current).unwrap();
+
+        let report = auto_update_at(&data, false);
+        assert!(report.failed.is_empty(), "no failures: {:?}", report.failed);
+        assert_eq!(report.release.as_ref().map(|release| release.tag.as_str()), Some("v2.0.0"));
+        assert!(!report.downloaded, "the release was already cached");
+        assert_eq!(report.updated.len(), 1);
+        assert_eq!(report.updated[0].game_id, id);
+        assert_eq!(report.updated[0].from.as_deref(), Some("v1.0.0"));
+        assert_eq!(
+            fs::read(work.join("winmm.dll")).unwrap(),
+            b"MZ newest build RTXMFG\n".to_vec()
+        );
+        let record = find_record(&store::load(&data), &id).unwrap();
+        assert_eq!(record.version.as_deref(), Some("v2.0.0"));
+        assert!(record.previous.is_some(), "the replaced build stays for undo");
+
+        // a second pass finds nothing left to do
+        let again = auto_update_at(&data, false);
+        assert!(again.updated.is_empty());
         let _ = fs::remove_dir_all(&root);
     }
 

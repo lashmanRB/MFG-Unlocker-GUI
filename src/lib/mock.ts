@@ -1,5 +1,6 @@
 import type {
   ApplyResult,
+  AutoUpdateReport,
   CompatReport,
   ExeCandidate,
   GameEntry,
@@ -9,6 +10,7 @@ import type {
   ReleaseInfo,
   ScanResult,
   StatusSummary,
+  UpdatedGame,
 } from "./types";
 
 const now = Math.floor(Date.now() / 1000);
@@ -21,6 +23,9 @@ interface MockFlags {
   scanErrors: string[];
   settingsWarnings: string[];
   writeFails: boolean;
+  autoUpdateGames: string[];
+  autoUpdateFailed: string[];
+  autoUpdateDownloaded: boolean;
 }
 
 export const mockFlags: MockFlags = {
@@ -30,6 +35,9 @@ export const mockFlags: MockFlags = {
   scanErrors: [],
   settingsWarnings: [],
   writeFails: false,
+  autoUpdateGames: [],
+  autoUpdateFailed: [],
+  autoUpdateDownloaded: false,
 };
 
 const baseCompat: CompatReport = {
@@ -432,6 +440,35 @@ export const mock = {
   },
 
   releaseInfo: (_refresh: boolean): Promise<ReleaseInfo> => Promise.resolve({ ...release }),
+
+  autoUpdate: (_refresh: boolean): Promise<AutoUpdateReport> => {
+    const updated: UpdatedGame[] = [];
+    for (const name of mockFlags.autoUpdateGames) {
+      const found = allGames().find((game) => game.name === name);
+      if (!found || found.install === null) continue;
+      const prior = found.install;
+      if (prior.version === release.tag) continue;
+      found.install = {
+        dllName: prior.dllName,
+        version: release.tag,
+        sha256: release.sha256 ?? "",
+        binkBackup: prior.binkBackup,
+        installedAt: Math.floor(Date.now() / 1000),
+        previous: {
+          version: prior.version,
+          sha256: prior.sha256,
+          path: `${found.workDir}\\${prior.dllName.replace(/\.dll$/i, "")}.previous.dll`,
+        },
+      };
+      updated.push({ gameId: found.id, name: found.name, from: prior.version, to: release.tag });
+    }
+    return Promise.resolve({
+      release: { ...release },
+      downloaded: mockFlags.autoUpdateDownloaded,
+      updated,
+      failed: [...mockFlags.autoUpdateFailed],
+    });
+  },
 
   readSettings: (gameId: string): Promise<GameSettings> => {
     const stored = storedSettings.get(gameId);
