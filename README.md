@@ -11,10 +11,6 @@ from the mod's releases and checks the published SHA-256 before copying anything
 
 ![MFG Unlocker GUI](docs/overview.png)
 
-The screenshot above uses a sample library: a mod install on Cyberpunk 2077 with the previous build
-kept for undo, 007 First Light next to it, the NVIDIA column reading 6X MFG for both, and an RTX 4060
-in the footer.
-
 ## What it does
 
 - Finds Steam through the registry, reads every library folder Steam knows about, and lists the
