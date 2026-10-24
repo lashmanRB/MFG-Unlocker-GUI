@@ -8,6 +8,9 @@ by hand, and edit a JSON file to change a preset. This app does that part:
 
 - Finds Steam and every library folder added to it, lists the installed games, and shows which ones
   ship the files the mod needs: DLSS Frame Generation and Streamline next to the game executable.
+  NVIDIA's published per title list is matched on top of that (6X MFG, 4X MFG, Frame Generation
+  without an MFG override, or not listed), so a game whose Frame Generation plug-in comes from the
+  NVIDIA app still shows up as a candidate.
 - Installs the mod DLL into the folder that holds the game executable, under a proxy name you pick.
   It refuses to overwrite a DLL that belongs to the game, keeps an earlier mod build aside when it
   is replaced, and handles the Bink rename on its own.
@@ -75,6 +78,7 @@ Next to this app's own executable:
 | `data\store.json` | the game list, chosen executables, install and undo metadata |
 | `data\window.json` | last window position, size and maximized state |
 | `data\release\` | the downloaded mod builds and the release check cache |
+| `data\nvidia-overrides.json` | NVIDIA's per title list, refreshed weekly, used for the match column |
 | `data\backups\` | mod builds kept aside so an update or reinstall can be undone |
 | `data\webview\` | the WebView2 profile, which also holds the UI zoom level |
 
@@ -85,6 +89,9 @@ before it is copied anywhere.
 
 - This app does not ship the mod. `MFGUnlocker.dll` embeds Intel XeSS program data under Intel's
   terms, so it is fetched at run time rather than redistributed here.
+- The NVIDIA column is NVIDIA's own published data, fetched from their site and kept for a week. Not
+  listed does not mean the mod cannot work: it means NVIDIA publishes no override for that title, so
+  the multiplier comes from the game's own integration.
 - Settings saved here take effect the next time the game starts. Presets are the exception: the mod
   can switch them while a DirectX 12 game runs on RTX 20/30/40/50, which is why they are in the
   settings screen at all.

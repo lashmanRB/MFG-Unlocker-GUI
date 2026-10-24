@@ -45,6 +45,8 @@ pub fn classify(game_dir: &Path, exe_dir: Option<&Path>) -> CompatReport {
         has_vulkan: probe.vulkan,
         has_opti_scaler: probe.optiscaler,
         notes,
+        nvidia_tier: 0,
+        nvidia_name: None,
     }
 }
 

@@ -18,6 +18,7 @@ import { SettingsTab } from "./SettingsTab";
 interface WorkspaceScreenProps {
   game: GameEntry;
   release: ReleaseInfo | null;
+  nvidiaFetchedAt: number | null;
   settingsEpoch: number;
   onGameUpdated: (entry: GameEntry) => void;
   onDirtyChange: (dirty: boolean) => void;
@@ -26,6 +27,7 @@ interface WorkspaceScreenProps {
 export function WorkspaceScreen({
   game,
   release,
+  nvidiaFetchedAt,
   settingsEpoch,
   onGameUpdated,
   onDirtyChange,
@@ -153,7 +155,13 @@ export function WorkspaceScreen({
       <div
         className={cn("min-h-0 flex-1", tab === "overview" ? "block overflow-y-auto" : "hidden")}
       >
-        <OverviewTab game={game} release={release} install={install} onGameUpdated={onGameUpdated} />
+        <OverviewTab
+          game={game}
+          release={release}
+          nvidiaFetchedAt={nvidiaFetchedAt}
+          install={install}
+          onGameUpdated={onGameUpdated}
+        />
       </div>
 
       <div

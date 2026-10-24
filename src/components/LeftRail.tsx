@@ -6,7 +6,7 @@ import { RailSkeleton } from "./Skeletons";
 import { cn } from "../lib/cn";
 import type { GameEntry } from "../lib/types";
 
-type Filter = "all" | "supported" | "installed";
+type Filter = "all" | "supported" | "installed" | "nvidia";
 
 interface FilterOption {
   value: Filter;
@@ -24,11 +24,16 @@ interface LeftRailProps {
   onAddFolder: () => void;
 }
 
+function hasMfgCeiling(game: GameEntry): boolean {
+  return game.compat.nvidiaTier === 4 || game.compat.nvidiaTier === 6;
+}
+
 function matchesFilter(game: GameEntry, filter: Filter): boolean {
   if (filter === "installed") return game.install !== null;
   if (filter === "supported") {
     return game.compat.state === "supported" || game.compat.state === "likely";
   }
+  if (filter === "nvidia") return hasMfgCeiling(game);
   return true;
 }
 
@@ -47,10 +52,12 @@ export function LeftRail({
   const options = useMemo<FilterOption[]>(() => {
     const supported = games.filter((game) => matchesFilter(game, "supported")).length;
     const installed = games.filter((game) => matchesFilter(game, "installed")).length;
+    const nvidia = games.filter((game) => matchesFilter(game, "nvidia")).length;
     return [
       { value: "all", label: "All", count: games.length },
       { value: "supported", label: "Supported", count: supported },
       { value: "installed", label: "Installed", count: installed },
+      { value: "nvidia", label: "NVIDIA", count: nvidia },
     ];
   }, [games]);
 
@@ -106,7 +113,7 @@ export function LeftRail({
                 aria-pressed={active}
                 onClick={() => setFilter(option.value)}
                 className={cn(
-                  "flex h-6 flex-1 items-center justify-center gap-1 rounded-[4px] text-[11.5px] font-medium transition-[background-color,color,box-shadow] duration-150 ease-out",
+                  "flex h-6 flex-1 items-center justify-center gap-1 rounded-[4px] text-[11.5px] font-medium transition-[background-color,color,box-shadow] duration-150 ease-out max-[920px]:gap-0.5 max-[920px]:text-[11px]",
                   active
                     ? "bg-elevated text-ink shadow-[inset_0_0_0_1px_var(--color-line-strong)]"
                     : "text-ink-dim hover:text-ink-muted",
@@ -115,7 +122,7 @@ export function LeftRail({
                 {option.label}
                 <span
                   className={cn(
-                    "mono text-[10px]",
+                    "mono text-[10px] max-[920px]:hidden",
                     active ? "text-ink-dim" : "text-ink-dim/70",
                   )}
                 >

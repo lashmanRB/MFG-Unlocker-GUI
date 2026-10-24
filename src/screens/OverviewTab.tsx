@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Check, Info, Minus } from "lucide-react";
+import { Check, CircleDot, Info, Minus } from "lucide-react";
 import { api } from "../lib/api";
 import { attempt } from "../lib/attempt";
-import { formatBytes } from "../lib/format";
+import { formatBytes, relativeTime } from "../lib/format";
 import { cn } from "../lib/cn";
 import type { InstallControls } from "../lib/install";
 import type { GameEntry, ReleaseInfo } from "../lib/types";
@@ -14,6 +14,7 @@ import { useToast } from "../hooks/useToast";
 interface OverviewTabProps {
   game: GameEntry;
   release: ReleaseInfo | null;
+  nvidiaFetchedAt: number | null;
   install: InstallControls;
   onGameUpdated: (entry: GameEntry) => void;
 }
@@ -23,7 +24,20 @@ interface Probe {
   found: boolean;
 }
 
-export function OverviewTab({ game, release, install, onGameUpdated }: OverviewTabProps) {
+function nvidiaTierValue(tier: number): string {
+  if (tier === 6) return "6X MFG";
+  if (tier === 4) return "4X MFG";
+  if (tier === 2) return "Frame Generation listed, no MFG override";
+  return "not listed";
+}
+
+export function OverviewTab({
+  game,
+  release,
+  nvidiaFetchedAt,
+  install,
+  onGameUpdated,
+}: OverviewTabProps) {
   const toast = useToast();
   const [selectedExe, setSelectedExe] = useState<string | null>(
     game.exePath ?? game.exeCandidates[0]?.path ?? null,
@@ -41,6 +55,12 @@ export function OverviewTab({ game, release, install, onGameUpdated }: OverviewT
     { label: "OptiScaler", found: game.compat.hasOptiScaler },
     { label: "Vulkan", found: game.compat.hasVulkan },
   ];
+
+  const tier = game.compat.nvidiaTier;
+  const matchedName =
+    game.compat.nvidiaName !== null && game.compat.nvidiaName !== game.name
+      ? game.compat.nvidiaName
+      : null;
 
   const applyExe = async () => {
     if (selectedExe === null) return;
@@ -60,7 +80,17 @@ export function OverviewTab({ game, release, install, onGameUpdated }: OverviewT
       <div className="flex min-w-0 flex-col gap-3">
         <Section
           title="Frame generation"
-          aside={<span className="text-[10.5px] text-ink-dim">checked beside the executable</span>}
+          aside={
+            <span className="flex items-center gap-2 text-[10.5px] text-ink-dim">
+              <span className="max-[760px]:hidden">checked beside the executable</span>
+              <span className="h-3 w-px bg-line max-[760px]:hidden" />
+              <span title={nvidiaFetchedAt === null ? "no cached NVIDIA list" : "age of the cached NVIDIA list"}>
+                {nvidiaFetchedAt === null
+                  ? "NVIDIA list unavailable"
+                  : `NVIDIA list ${relativeTime(nvidiaFetchedAt)}`}
+              </span>
+            </span>
+          }
         >
           <ul className="divide-y divide-line/60">
             {probes.map((probe) => (
@@ -76,6 +106,32 @@ export function OverviewTab({ game, release, install, onGameUpdated }: OverviewT
                 </span>
               </li>
             ))}
+            <li
+              className="flex items-center gap-2 py-1.5 last:pb-0"
+              title={matchedName === null ? undefined : `matched: ${matchedName}`}
+            >
+              {tier === 6 || tier === 4 ? (
+                <Check size={12} className="shrink-0 text-accent" />
+              ) : tier === 2 ? (
+                <CircleDot size={12} className="shrink-0 text-ink-muted" />
+              ) : (
+                <Minus size={12} className="shrink-0 text-ink-dim" />
+              )}
+              <span className="shrink-0 text-[12px] text-ink">NVIDIA</span>
+              {matchedName !== null && (
+                <span className="min-w-0 truncate text-[10px] text-ink-dim max-[760px]:hidden">
+                  matched: {matchedName}
+                </span>
+              )}
+              <span
+                className={cn(
+                  "ml-auto shrink-0 text-right text-[10.5px]",
+                  tier === 0 ? "text-ink-dim" : "text-ink-muted",
+                )}
+              >
+                {nvidiaTierValue(tier)}
+              </span>
+            </li>
           </ul>
 
           {game.compat.notes.length > 0 && (

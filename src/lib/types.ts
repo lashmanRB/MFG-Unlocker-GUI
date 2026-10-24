@@ -18,6 +18,8 @@ export interface CompatReport {
   hasSuperRes: boolean;
   hasVulkan: boolean;
   hasOptiScaler: boolean;
+  nvidiaTier: number;
+  nvidiaName: string | null;
   notes: string[];
 }
 
@@ -69,6 +71,7 @@ export interface ScanResult {
   scan: SteamScan;
   manual: GameEntry[];
   gpu: GpuInfo;
+  nvidiaFetchedAt: number | null;
 }
 
 export interface ReleaseInfo {

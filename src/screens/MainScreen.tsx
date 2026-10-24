@@ -204,6 +204,7 @@ export default function MainScreen() {
       <WorkspaceScreen
         game={selected}
         release={release}
+        nvidiaFetchedAt={result?.nvidiaFetchedAt ?? null}
         settingsEpoch={settingsEpoch}
         onGameUpdated={updateGame}
         onDirtyChange={setSettingsDirty}

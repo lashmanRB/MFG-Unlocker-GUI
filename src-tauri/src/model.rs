@@ -18,6 +18,10 @@ pub struct CompatReport {
     pub has_vulkan: bool,
     pub has_opti_scaler: bool,
     pub notes: Vec<String>,
+    // NVIDIA's published per title entry: 0 not listed, 2 Frame Generation without
+    // an MFG override, 4 and 6 their MFG ceiling.
+    pub nvidia_tier: u8,
+    pub nvidia_name: Option<String>,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -88,6 +92,8 @@ pub struct ScanResult {
     pub scan: SteamScan,
     pub manual: Vec<GameEntry>,
     pub gpu: GpuInfo,
+    // Unix seconds of the NVIDIA game list the reports were matched against.
+    pub nvidia_fetched_at: Option<u64>,
 }
 
 #[derive(Serialize, Clone, Debug)]

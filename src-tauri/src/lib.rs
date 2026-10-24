@@ -3,6 +3,7 @@ mod compat;
 mod gamedir;
 mod install;
 mod model;
+mod nvidia;
 mod portable;
 mod release;
 mod settings;

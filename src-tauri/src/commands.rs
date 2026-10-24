@@ -6,6 +6,7 @@ use crate::model::{
     InstallInfo, LogFile, ReleaseInfo, ScanResult, StatusSummary, SteamLibrary, SteamScan,
     StoredGame, Store, UpdatedGame, LOG_PREFIX,
 };
+use crate::nvidia;
 use crate::portable;
 use crate::release;
 use crate::settings;
@@ -45,6 +46,7 @@ fn make_entry(
     size: Option<u64>,
     library: Option<String>,
     stored: Option<&StoredGame>,
+    nvidia_list: &crate::nvidia::Index,
 ) -> GameEntry {
     let candidates = gamedir::find_executables(install_dir, MAX_EXES);
     let stored_exe = stored
@@ -55,7 +57,23 @@ fn make_entry(
             .map(|found| found.path.to_string_lossy().to_string())
     });
     let exe_dir = exe_dir_of(picked.as_deref());
-    let report = compat::classify(install_dir, exe_dir.as_deref());
+    let mut report = compat::classify(install_dir, exe_dir.as_deref());
+
+    // NVIDIA's list settles the "Frame Generation comes from the NVIDIA app"
+    // case, where there is nothing to probe beside the executable.
+    if let Some(entry) = nvidia_list.tier_for(name) {
+        report.nvidia_tier = entry.tier;
+        report.nvidia_name = Some(entry.name.clone());
+        if report.state == "unknown" {
+            report.state = "likely".to_string();
+            report.notes.push(format!(
+                "NVIDIA lists {} for this title ({}), so the Frame Generation files may come from the NVIDIA app rather than the game folder.",
+                crate::nvidia::tier_label(entry.tier),
+                entry.name
+            ));
+        }
+    }
+
     let work_dir = exe_dir
         .clone()
         .unwrap_or_else(|| install_dir.to_path_buf());
@@ -153,6 +171,7 @@ where
 
 fn scan_blocking() -> Result<ScanResult, String> {
     let dir = portable::data_dir()?;
+    let nvidia_list = nvidia::load(&dir, true);
     let mut store = store::load(&dir);
     let mut errors = Vec::new();
     let mut libraries = Vec::new();
@@ -223,6 +242,7 @@ fn scan_blocking() -> Result<ScanResult, String> {
             Some(steam_app.size_on_disk),
             library,
             previous.as_ref(),
+            &nvidia_list,
         )
     });
 
@@ -243,6 +263,7 @@ fn scan_blocking() -> Result<ScanResult, String> {
             record.size_on_disk,
             record.library_path.clone(),
             Some(record),
+            &nvidia_list,
         )
     });
 
@@ -287,6 +308,7 @@ fn scan_blocking() -> Result<ScanResult, String> {
         },
         manual: manual_entries,
         gpu: compat::gpu(),
+        nvidia_fetched_at: nvidia_list.fetched_at,
     })
 }
 
@@ -312,6 +334,7 @@ pub async fn rescan_game(game_id: String) -> Result<GameEntry, String> {
             record.size_on_disk,
             record.library_path.clone(),
             Some(&record),
+            &nvidia::load(&dir, false),
         ))
     })
     .await
@@ -326,8 +349,17 @@ pub async fn add_manual_game(path: String) -> Result<GameEntry, String> {
             return Err("Pick a folder that exists.".to_string());
         }
         let name = folder_name(&install_dir);
-        let entry = make_entry(&name, "manual", None, &install_dir, None, None, None);
         let dir = portable::data_dir()?;
+        let entry = make_entry(
+            &name,
+            "manual",
+            None,
+            &install_dir,
+            None,
+            None,
+            None,
+            &nvidia::load(&dir, false),
+        );
         let mut current = store::load(&dir);
         let record = record_from_entry(&entry, None);
         store::upsert(&mut current, record);
@@ -373,6 +405,7 @@ pub async fn set_game_exe(game_id: String, exe_path: String) -> Result<GameEntry
             record.size_on_disk,
             record.library_path.clone(),
             Some(&record),
+            &nvidia::load(&dir, false),
         ))
     })
     .await

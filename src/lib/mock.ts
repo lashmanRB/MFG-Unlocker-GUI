@@ -47,6 +47,8 @@ const baseCompat: CompatReport = {
   hasSuperRes: true,
   hasVulkan: false,
   hasOptiScaler: false,
+  nvidiaTier: 0,
+  nvidiaName: null,
   notes: [],
 };
 
@@ -106,6 +108,8 @@ const cyberpunk = makeGame({
   installDir: cyberpunkDir,
   exeCandidates: [exeCandidate(cyberpunkDir, "Cyberpunk2077"), exeCandidate(cyberpunkDir, "REDprelauncher", 21_400_000)],
   compat: {
+    nvidiaTier: 6,
+    nvidiaName: "Cyberpunk 2077",
     notes: ["Frame generation files came from the 2.3 patch, DLSS-G 310.9.16 detected"],
   },
   install: {
@@ -127,6 +131,10 @@ const liesOfP = makeGame({
     exeCandidate(liesWorkDir, "LiesOfP-Win64-Shipping", 128_400_000),
     exeCandidate(liesWorkDir, "LiesOfP", 96_200_000),
   ],
+  compat: {
+    nvidiaTier: 4,
+    nvidiaName: "Lies of P",
+  },
   install: {
     dllName: "bink2w64.dll",
     version: "v1.5.4",
@@ -155,7 +163,16 @@ const games: GameEntry[] = [
     name: "Resident Evil 4",
     installDir: re4Dir,
     exeCandidates: [exeCandidate(re4Dir, "re4", 66_000_000), exeCandidate(re4Dir, "re_chunk_000", 310_000_000)],
-    compat: { state: "likely", hasStreamline: false },
+    compat: {
+      state: "likely",
+      hasFrameGen: false,
+      hasStreamline: false,
+      nvidiaTier: 2,
+      nvidiaName: "Resident Evil 4 Remake",
+      notes: [
+        "NVIDIA lists Frame Generation for this title, so the DLLs probably come from the NVIDIA app",
+      ],
+    },
   }),
   makeGame({
     appId: 1903340,
@@ -354,6 +371,7 @@ export const mock = {
       },
       manual: mockFlags.hideGames ? [] : manualGames.map((game) => ({ ...game })),
       gpu: { name: "NVIDIA GeForce RTX 4080", family: "ada", maxMultiplier: 6 },
+      nvidiaFetchedAt: now - 3 * 86_400,
     };
   },
 
