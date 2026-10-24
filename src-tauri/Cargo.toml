@@ -1,6 +1,6 @@
 [package]
 name = "mfg-unlocker-gui"
-version = "1.0.0"
+version = "1.0.1"
 description = "Companion app for MFG Unlocker"
 authors = ["lashman"]
 edition = "2021"

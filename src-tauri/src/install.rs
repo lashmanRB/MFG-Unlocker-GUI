@@ -2,6 +2,25 @@ use crate::model::{InstallInfo, PreviousInstall, MOD_DLL_NAME};
 use crate::release;
 use std::path::{Path, PathBuf};
 
+// A mod DLL that a process has mapped cannot be replaced or removed, and Windows
+// reports that as a sharing violation. Naming the file and the likely reason beats
+// a bare errno in a toast.
+fn lock_message(path: &Path) -> String {
+    let name = path
+        .file_name()
+        .map(|value| value.to_string_lossy().to_string())
+        .unwrap_or_else(|| path.to_string_lossy().to_string());
+    format!("{name} is still in use by another process, most likely the game itself. Close the game and try again.")
+}
+
+fn io_message(error: &std::io::Error, path: &Path, what: &str) -> String {
+    if error.raw_os_error() == Some(32) {
+        lock_message(path)
+    } else {
+        format!("{what} {}: {error}", path.display())
+    }
+}
+
 // A mod DLL is a few megabytes; a scan bigger than this is a different file.
 const MARKER_SCAN_LIMIT: u64 = 16 * 1024 * 1024;
 // Below this, two files of nearly the same size say nothing about either of them.
@@ -32,7 +51,7 @@ pub fn install(data_dir: &Path, game_dir: &Path, dll_name: &str) -> Result<Insta
     std::fs::copy(&cached.dll_path, &target).map_err(|error| {
         restore_bink(game_dir, &name, bink_backup.as_deref());
         restore_previous(&target, previous.as_ref());
-        format!("cannot copy {MOD_DLL_NAME} into the game folder: {error}")
+        io_message(&error, &target, "cannot replace")
     })?;
 
     let sha256 = release::sha256_file(&target)?;
@@ -101,7 +120,7 @@ pub fn uninstall(game_dir: &Path, info: &InstallInfo) -> Result<(), String> {
     let target = game_dir.join(&info.dll_name);
     if target.is_file() {
         std::fs::remove_file(&target)
-            .map_err(|error| format!("cannot remove {}: {error}", target.display()))?;
+            .map_err(|error| io_message(&error, &target, "cannot remove"))?;
     }
 
     // Put back the build this install replaced, if there was one.
@@ -109,9 +128,8 @@ pub fn uninstall(game_dir: &Path, info: &InstallInfo) -> Result<(), String> {
     if let Some(previous) = &info.previous {
         let kept = Path::new(&previous.path);
         if kept.is_file() {
-            std::fs::copy(kept, &target).map_err(|error| {
-                format!("cannot put the older {MOD_DLL_NAME} back: {error}")
-            })?;
+            std::fs::copy(kept, &target)
+                .map_err(|error| io_message(&error, &target, "cannot restore the older build to"))?;
             let _ = std::fs::remove_file(kept);
             if let Some(folder) = kept.parent() {
                 let _ = std::fs::remove_dir(folder);
@@ -124,7 +142,7 @@ pub fn uninstall(game_dir: &Path, info: &InstallInfo) -> Result<(), String> {
         let backup = game_dir.join(backup_name);
         if backup.is_file() && !restored {
             std::fs::rename(&backup, game_dir.join(&info.dll_name)).map_err(|error| {
-                format!("cannot put the game's {backup_name} back: {error}")
+                io_message(&error, &backup, "cannot put the game's DLL back from")
             })?;
         }
     }
@@ -162,7 +180,7 @@ fn preserve_bink(game_dir: &Path, name: &str) -> Result<Option<String>, String> 
     let backup = game_dir.join(&backup_name);
     if original.is_file() && !backup.exists() {
         std::fs::rename(&original, &backup)
-            .map_err(|error| format!("cannot rename {name} to {backup_name}: {error}"))?;
+            .map_err(|error| io_message(&error, &original, "cannot rename"))?;
     }
     // Both files present means the game already runs the proxy and keeps its own
     // DLL in the Hooked file.
@@ -351,6 +369,34 @@ mod tests {
         assert!(install(&data, &game, "../evil.dll").is_err());
         assert!(install(&data, &game, "version.txt").is_err());
         assert!(!root.join("evil.dll").exists());
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn a_locked_proxy_says_which_file_is_holding_it() {
+        use std::os::windows::fs::OpenOptionsExt;
+
+        let root = scratch("locked");
+        let data = data_dir(&root, "v9.9.9");
+        let game = root.join("game");
+        fs::create_dir_all(&game).unwrap();
+        let info = install(&data, &game, "winmm.dll").unwrap();
+
+        // an open handle without delete sharing is what a loaded DLL looks like
+        let held = fs::OpenOptions::new()
+            .read(true)
+            .share_mode(0x1)
+            .open(game.join("winmm.dll"))
+            .unwrap();
+        let error = uninstall(&game, &info).unwrap_err();
+        assert!(
+            error.contains("still in use"),
+            "the message explains the lock: {error}"
+        );
+
+        drop(held);
+        uninstall(&game, &info).unwrap();
+        assert!(!game.join("winmm.dll").exists());
         let _ = fs::remove_dir_all(&root);
     }
 

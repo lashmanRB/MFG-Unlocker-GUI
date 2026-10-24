@@ -301,6 +301,10 @@ may then recommend settings for a 4090.
 **An update was skipped.** The game was running and holding the DLL open. Close it and rescan; the
 next scan updates it.
 
+**Install or undo says the DLL is still in use.** A running game keeps the mod DLL mapped, and Windows
+will not let anything replace or delete a mapped file. Close the game, then press the button again.
+Nothing was changed by the failed attempt.
+
 **Install says the folder needs administrator rights.** The game folder is not writable by your user,
 so the app will not pretend the copy succeeded. Start the game folder from a writable library, or run
 the app as administrator deliberately.
