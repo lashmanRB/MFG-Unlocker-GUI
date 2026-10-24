@@ -236,7 +236,7 @@ fn scan_blocking() -> Result<ScanResult, String> {
         })
         .collect();
 
-    let steam_entries = run_parallel(&jobs, WORKERS, |(steam_app, previous)| {
+    let mut steam_entries = run_parallel(&jobs, WORKERS, |(steam_app, previous)| {
         let library = libraries
             .iter()
             .filter(|root| steam_app.install_dir.starts_with(root))
@@ -253,6 +253,20 @@ fn scan_blocking() -> Result<ScanResult, String> {
             &nvidia_list,
         )
     });
+
+    // Store art for new titles sits behind a hash directory, so the plain CDN
+    // paths miss. Resolve those and add them after the legacy candidates.
+    let app_ids: Vec<u32> = steam_entries
+        .iter()
+        .filter_map(|entry| entry.app_id)
+        .collect();
+    let cover_catalog = crate::covers::ensure(&dir, &app_ids, true);
+    for entry in &mut steam_entries {
+        let Some(app_id) = entry.app_id else { continue };
+        if let Some(url) = cover_catalog.url_for(app_id) {
+            entry.cover_urls.push(url.clone());
+        }
+    }
 
     // A folder the user added and then moved away should leave the list with it.
     let manual_records: Vec<StoredGame> = store

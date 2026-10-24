@@ -248,6 +248,7 @@ Next to this app's own executable:
 | `data\release\` | downloaded mod builds and the release check cache |
 | `data\backups\` | mod builds kept aside so an update or reinstall can be undone |
 | `data\nvidia-overrides.json` | NVIDIA's per-title list, refreshed weekly |
+| `data\steam-covers.json` | cover art URLs resolved from Steam's store API, refreshed monthly |
 | `data\webview\` | the WebView2 profile, which also holds the UI zoom level |
 
 ## Portable

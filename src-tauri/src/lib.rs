@@ -1,5 +1,6 @@
 mod commands;
 mod compat;
+mod covers;
 mod gamedir;
 mod install;
 mod model;
