@@ -47,8 +47,9 @@ are all reversible, and it only writes files it can name.
 
 ## First run
 
-1. Copy `MFG Unlocker GUI.exe` into a folder you can write to. A Program Files folder needs
-   administrator rights, which the app does not ask for.
+1. Take the executable from the [latest release](../../releases/latest) (or build it yourself) and
+   put it in a folder you can write to. A Program Files folder needs administrator rights, which the
+   app does not ask for.
 2. Run it. The first scan reads your Steam libraries and takes a few seconds on a 600 game library.
 3. The app checks the mod's releases and downloads the current build into `data\release` before you
    install anything.
