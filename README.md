@@ -103,4 +103,10 @@ before it is copied anywhere.
 
 ## Licence
 
-MIT for this app. MFG Unlocker is MIT as well; see its repository for the third party notices.
+CC0 1.0 Universal. To the extent possible under law, lashman has waived all copyright and related
+or neighbouring rights to this work, so it is public domain: use it, change it, ship it, no
+attribution needed. The full text is in [LICENSE](LICENSE).
+
+MFG Unlocker itself is MIT and is not included here. Its DLL embeds Intel XeSS program data under
+Intel's terms, which is why the app downloads it at run time. Dependencies keep their own licences
+(MIT and Apache-2.0).
