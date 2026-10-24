@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { attempt } from "../lib/attempt";
 import { cn } from "../lib/cn";
-import { isBinkName } from "../lib/install";
 import type { InstallBusy } from "../lib/install";
-import type { GameEntry, ReleaseInfo } from "../lib/types";
+import type { GameEntry, ProxyOption, ReleaseInfo } from "../lib/types";
 import { GameHeader } from "../components/GameHeader";
 import { InstallActionDialog } from "../components/InstallActionDialog";
 import type { InstallDialogMode } from "../components/InstallActionDialog";
@@ -34,31 +33,58 @@ export function WorkspaceScreen({
 }: WorkspaceScreenProps) {
   const toast = useToast();
   const [tab, setTab] = useState<WorkspaceTab>("overview");
-  const [dllName, setDllName] = useState(game.install?.dllName ?? "winmm.dll");
-  const [binkBackup, setBinkBackup] = useState(
-    game.install === null ? true : game.install.binkBackup !== null,
-  );
+  const [dllName, setDllName] = useState(game.install?.dllName ?? "");
+  const [options, setOptions] = useState<ProxyOption[]>([]);
+  const [optionsLoading, setOptionsLoading] = useState(true);
+  const [optionsError, setOptionsError] = useState<string | null>(null);
   const [busy, setBusy] = useState<InstallBusy>(null);
   const [installError, setInstallError] = useState<string | null>(null);
   const [dialog, setDialog] = useState<InstallDialogMode | null>(null);
   const [launching, setLaunching] = useState(false);
   const [opening, setOpening] = useState(false);
+  const optionsTicket = useRef(0);
+
+  const loadProxyOptions = useCallback(async () => {
+    const ticket = optionsTicket.current + 1;
+    optionsTicket.current = ticket;
+    setOptionsLoading(true);
+    setOptionsError(null);
+    const response = await attempt(() => api.proxyNames(game.id));
+    if (optionsTicket.current !== ticket) return;
+    setOptionsLoading(false);
+    if (!response.ok) {
+      setOptions([]);
+      setDllName("");
+      setOptionsError(response.message);
+      return;
+    }
+    setOptions(response.value);
+    setDllName((current) =>
+      response.value.some((option) => option.name === current)
+        ? current
+        : (response.value[0]?.name ?? ""),
+    );
+  }, [game.id]);
 
   useEffect(() => {
-    setDllName(game.install?.dllName ?? "winmm.dll");
-    setBinkBackup(game.install === null ? true : game.install.binkBackup !== null);
+    setDllName(game.install?.dllName ?? "");
     setInstallError(null);
-  }, [game.id, game.install?.dllName, game.install?.binkBackup]);
+  }, [game.id]);
 
+  useEffect(() => {
+    void loadProxyOptions();
+  }, [loadProxyOptions]);
+
+  const available = !optionsLoading && optionsError === null && options.length > 0;
   const needsReplace =
     game.install !== null &&
     (game.install.dllName !== dllName || game.install.version !== (release?.tag ?? null));
 
   const runInstall = async () => {
+    if (!available) return;
     setInstallError(null);
     setBusy("install");
-    const bink = isBinkName(dllName) && binkBackup;
-    const response = await attempt(() => api.installMod(game.id, dllName, bink));
+    const response = await attempt(() => api.installMod(game.id, dllName));
     setBusy(null);
     setDialog(null);
     if (!response.ok) {
@@ -68,6 +94,7 @@ export function WorkspaceScreen({
     }
     onGameUpdated({ ...game, install: response.value });
     toast("ok", `${response.value.dllName} installed for ${game.name}`);
+    void loadProxyOptions();
   };
 
   const runUndo = async () => {
@@ -90,10 +117,12 @@ export function WorkspaceScreen({
       onGameUpdated({ ...game, install: null });
       setInstallError(`The mod was removed, but the folder could not be read again: ${refreshed.message}`);
       toast("warn", "Mod removed, but the game folder could not be re-read");
+      void loadProxyOptions();
       return;
     }
 
     onGameUpdated(refreshed.value);
+    void loadProxyOptions();
     const restored = refreshed.value.install;
     if (restored !== null) {
       toast("ok", `Older build restored: ${restored.version ?? "unknown version"}`);
@@ -103,6 +132,7 @@ export function WorkspaceScreen({
   };
 
   const requestInstall = () => {
+    if (!available) return;
     if (needsReplace) {
       setDialog("replace");
       return;
@@ -131,11 +161,13 @@ export function WorkspaceScreen({
 
   const install = {
     dllName,
-    binkBackup,
+    options,
+    optionsLoading,
+    optionsError,
+    available,
     busy,
     error: installError,
     onDllName: setDllName,
-    onBinkBackup: setBinkBackup,
     onInstall: requestInstall,
     onUndo: requestUndo,
   };

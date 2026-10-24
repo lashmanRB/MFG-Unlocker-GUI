@@ -197,6 +197,15 @@ pub struct LogFile {
 
 #[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct ProxyOption {
+    pub name: String,
+    // free, ours (this app installed it) or bink (the game's own DLL takes the
+    // name, so it is moved to "<name>Hooked.dll" and the proxy loads it).
+    pub state: String,
+}
+
+#[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdatedGame {
     pub game_id: String,
     pub name: String,

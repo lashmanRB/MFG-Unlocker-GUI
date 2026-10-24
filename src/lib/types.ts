@@ -35,6 +35,11 @@ export interface PreviousInstall {
   path: string;
 }
 
+export interface ProxyOption {
+  name: string;
+  state: "free" | "ours" | "bink";
+}
+
 export interface InstallInfo {
   dllName: string;
   version: string | null;

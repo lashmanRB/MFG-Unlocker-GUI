@@ -7,6 +7,7 @@ import type {
   GameSettings,
   InstallInfo,
   LogFile,
+  ProxyOption,
   ReleaseInfo,
   ScanResult,
   StatusSummary,
@@ -26,6 +27,7 @@ interface MockFlags {
   autoUpdateGames: string[];
   autoUpdateFailed: string[];
   autoUpdateDownloaded: boolean;
+  proxyOptionsEmpty: boolean;
 }
 
 export const mockFlags: MockFlags = {
@@ -38,6 +40,7 @@ export const mockFlags: MockFlags = {
   autoUpdateGames: [],
   autoUpdateFailed: [],
   autoUpdateDownloaded: false,
+  proxyOptionsEmpty: false,
 };
 
 const baseCompat: CompatReport = {
@@ -207,6 +210,53 @@ function allGames(): GameEntry[] {
 
 function findGame(gameId: string): GameEntry | undefined {
   return allGames().find((item) => item.id === gameId);
+}
+
+const proxyCandidates = [
+  "version.dll",
+  "dinput8.dll",
+  "winmm.dll",
+  "d3d9.dll",
+  "d3d10.dll",
+  "d3d11.dll",
+  "d3d12.dll",
+  "dxgi.dll",
+  "dsound.dll",
+  "wininet.dll",
+  "winhttp.dll",
+  "xinput1_1.dll",
+  "xinput1_2.dll",
+  "xinput1_3.dll",
+  "xinput1_4.dll",
+  "xinput9_1_0.dll",
+  "xinputuap.dll",
+];
+
+const gameBinkDlls = new Map<string, string[]>([
+  [liesOfP.id, ["binkw64.dll", "bink2w64.dll"]],
+]);
+
+function binkDllsFor(game: GameEntry): string[] {
+  return gameBinkDlls.get(game.id) ?? [];
+}
+
+function proxyOptionsFor(game: GameEntry): ProxyOption[] {
+  if (mockFlags.proxyOptionsEmpty) return [];
+  const installed = game.install?.dllName ?? null;
+  const bink = binkDllsFor(game);
+  const options: ProxyOption[] = [];
+
+  if (installed !== null && !bink.includes(installed)) {
+    options.push({ name: installed, state: "ours" });
+  }
+  for (const name of proxyCandidates) {
+    if (name === installed || bink.includes(name)) continue;
+    options.push({ name, state: "free" });
+  }
+  for (const name of bink) {
+    options.push({ name, state: "bink" });
+  }
+  return options;
 }
 
 const baseSettings: GameSettings = {
@@ -415,10 +465,17 @@ export const mock = {
     return Promise.resolve({ ...found });
   },
 
-  installMod: (gameId: string, dllName: string, bink: boolean): Promise<InstallInfo> => {
+  proxyNames: (gameId: string): Promise<ProxyOption[]> => {
+    const found = findGame(gameId);
+    if (!found) return Promise.reject(new Error("Unknown game"));
+    return Promise.resolve(proxyOptionsFor(found));
+  },
+
+  installMod: (gameId: string, dllName: string): Promise<InstallInfo> => {
     const found = findGame(gameId);
     if (!found) return Promise.reject(new Error("Unknown game"));
     const prior = found.install;
+    const bink = binkDllsFor(found).includes(dllName);
     const info: InstallInfo = {
       dllName,
       version: release.tag,

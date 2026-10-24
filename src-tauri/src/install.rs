@@ -7,12 +7,7 @@ const MARKER_SCAN_LIMIT: u64 = 16 * 1024 * 1024;
 // Below this, two files of nearly the same size say nothing about either of them.
 const SIMILAR_SIZE_FLOOR: u64 = 256 * 1024;
 
-pub fn install(
-    data_dir: &Path,
-    game_dir: &Path,
-    dll_name: &str,
-    bink: bool,
-) -> Result<InstallInfo, String> {
+pub fn install(data_dir: &Path, game_dir: &Path, dll_name: &str) -> Result<InstallInfo, String> {
     let name = checked_name(dll_name)?;
     if !game_dir.is_dir() {
         return Err(format!("The game folder {} does not exist.", game_dir.display()));
@@ -20,12 +15,9 @@ pub fn install(
 
     let cached = release::ensure_dll(data_dir, false)?;
 
-    // The game's own Bink DLL has to move aside before the proxy can take its name.
-    let bink_backup = if bink {
-        preserve_bink(game_dir, &name)?
-    } else {
-        None
-    };
+    // A Bink name belongs to the game's own DLL: move that one aside first so the
+    // mod's proxy can load it back under the Hooked name.
+    let bink_backup = preserve_bink(game_dir, &name)?;
 
     let target = game_dir.join(&name);
     if target.is_file() && !is_ours(&target, &cached) {
@@ -285,7 +277,7 @@ mod tests {
         let game = root.join("game");
         fs::create_dir_all(&game).unwrap();
 
-        let info = install(&data, &game, "version.dll", false).unwrap();
+        let info = install(&data, &game, "version.dll").unwrap();
         assert_eq!(info.dll_name, "version.dll");
         assert_eq!(info.version.as_deref(), Some("v9.9.9"));
         assert_eq!(info.bink_backup, None);
@@ -310,7 +302,7 @@ mod tests {
         let other = b"a different proxy DLL, small on purpose".to_vec();
         fs::write(game.join("d3d11.dll"), &other).unwrap();
 
-        let error = install(&data, &game, "d3d11.dll", false).unwrap_err();
+        let error = install(&data, &game, "d3d11.dll").unwrap_err();
         assert!(error.contains("d3d11.dll"), "message names the file: {error}");
         assert_eq!(fs::read(game.join("d3d11.dll")).unwrap(), other);
         let _ = fs::remove_dir_all(&root);
@@ -325,7 +317,7 @@ mod tests {
         let original = b"the game's own bink DLL";
         fs::write(game.join("binkw64.dll"), original).unwrap();
 
-        let info = install(&data, &game, "binkw64.dll", true).unwrap();
+        let info = install(&data, &game, "binkw64.dll").unwrap();
         assert_eq!(info.bink_backup.as_deref(), Some("binkw64Hooked.dll"));
         assert_eq!(fs::read(game.join("binkw64Hooked.dll")).unwrap(), original);
         assert_eq!(fs::read(game.join("binkw64.dll")).unwrap(), FAKE_DLL);
@@ -343,8 +335,8 @@ mod tests {
         let game = root.join("game");
         fs::create_dir_all(&game).unwrap();
 
-        install(&data, &game, "dxgi.dll", false).unwrap();
-        let info = install(&data, &game, "dxgi.dll", false).unwrap();
+        install(&data, &game, "dxgi.dll").unwrap();
+        let info = install(&data, &game, "dxgi.dll").unwrap();
         assert_eq!(info.sha256, release::sha256_file(&game.join("dxgi.dll")).unwrap());
         let _ = fs::remove_dir_all(&root);
     }
@@ -356,8 +348,8 @@ mod tests {
         let game = root.join("game");
         fs::create_dir_all(&game).unwrap();
 
-        assert!(install(&data, &game, "../evil.dll", false).is_err());
-        assert!(install(&data, &game, "version.txt", false).is_err());
+        assert!(install(&data, &game, "../evil.dll").is_err());
+        assert!(install(&data, &game, "version.txt").is_err());
         assert!(!root.join("evil.dll").exists());
         let _ = fs::remove_dir_all(&root);
     }
@@ -416,7 +408,7 @@ mod tests {
         let game = root.join("game");
         fs::create_dir_all(&game).unwrap();
 
-        let first = install(&data, &game, "winmm.dll", false).unwrap();
+        let first = install(&data, &game, "winmm.dll").unwrap();
         assert!(first.previous.is_none());
         assert_eq!(fs::read(game.join("winmm.dll")).unwrap(), FAKE_DLL);
 
@@ -424,7 +416,7 @@ mod tests {
         let newer = b"MZ second build, RTXMFG markers included\n";
         publish_release(&data, "v2.0.0", newer);
 
-        let second = install(&data, &game, "winmm.dll", false).unwrap();
+        let second = install(&data, &game, "winmm.dll").unwrap();
         assert_eq!(second.version.as_deref(), Some("v2.0.0"));
         let previous = second.previous.clone().expect("the replaced build is kept");
         assert!(Path::new(&previous.path).is_file());

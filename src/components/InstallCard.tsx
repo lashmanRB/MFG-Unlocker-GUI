@@ -1,14 +1,12 @@
 import { Download, Undo2 } from "lucide-react";
 import { Button } from "./Button";
 import { Callout } from "./Callout";
-import { CheckboxRow, Select } from "./Controls";
+import { Select } from "./Controls";
 import { Field } from "./Field";
 import { Section } from "./Section";
-import { proxyNames } from "../lib/api";
 import { middleTruncate, relativeTime } from "../lib/format";
-import { isBinkName } from "../lib/install";
 import type { InstallControls } from "../lib/install";
-import type { GameEntry, ReleaseInfo } from "../lib/types";
+import type { GameEntry, ProxyOption, ReleaseInfo } from "../lib/types";
 
 interface InstallCardProps {
   game: GameEntry;
@@ -32,15 +30,26 @@ function PathRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function proxyLabel(option: ProxyOption): string {
+  if (option.state === "ours") return `${option.name} (installed)`;
+  if (option.state === "bink") return `${option.name} (bink route)`;
+  return option.name;
+}
+
 export function InstallCard({ game, release, controls }: InstallCardProps) {
   const install = game.install;
-  const bink = isBinkName(controls.dllName);
-  const hookedName = bink ? `${controls.dllName.replace(/\.dll$/i, "")}Hooked.dll` : null;
   const updateAvailable =
     install !== null &&
     install.version !== null &&
     release !== null &&
     install.version !== release.tag;
+
+  const noOptions =
+    !controls.optionsLoading && controls.optionsError === null && controls.options.length === 0;
+  const selected = controls.options.find((option) => option.name === controls.dllName) ?? null;
+  const binkName = selected !== null && selected.state === "bink" ? selected.name : null;
+  const hookedName =
+    binkName === null ? null : `${binkName.replace(/\.dll$/i, "")}Hooked.dll`;
 
   return (
     <Section
@@ -100,48 +109,52 @@ export function InstallCard({ game, release, controls }: InstallCardProps) {
       )}
 
       <div className="mt-3">
-        <Field
-          label="Proxy DLL"
-          htmlFor="install-proxy"
-          hint={
-            bink && hookedName !== null
-              ? undefined
-              : "Pick a name the game does not already ship in this folder."
-          }
-        >
-          <Select
-            id="install-proxy"
-            value={controls.dllName}
-            onChange={controls.onDllName}
-            disabled={controls.busy !== null}
-          >
-            {proxyNames.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        {bink && hookedName !== null && (
-          <p className="mt-1.5 text-[11px] leading-snug text-warn/90">
-            The game's own {controls.dllName} is backed up as {hookedName} before the mod DLL is
-            written.
+        {controls.optionsError !== null ? (
+          <div>
+            <span className="label text-ink-muted">Proxy DLL</span>
+            <Callout tone="danger" className="mt-1.5">
+              Could not read the available proxy names: {controls.optionsError}
+            </Callout>
+          </div>
+        ) : noOptions ? (
+          <div>
+            <span className="label text-ink-muted">Proxy DLL</span>
+            <Callout tone="danger" className="mt-1.5">
+              Every supported proxy name is already used in this folder.
+            </Callout>
+          </div>
+        ) : (
+          <Field label="Proxy DLL" htmlFor="install-proxy">
+            <Select
+              id="install-proxy"
+              value={controls.dllName}
+              onChange={controls.onDllName}
+              disabled={controls.optionsLoading || controls.busy !== null}
+            >
+              {controls.optionsLoading && controls.options.length === 0 && (
+                <option value={controls.dllName}>{controls.dllName}</option>
+              )}
+              {controls.options.map((option) => (
+                <option key={option.name} value={option.name}>
+                  {proxyLabel(option)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )}
+
+        {binkName !== null && hookedName !== null && (
+          <p className="mt-1.5 text-[11px] leading-snug text-ink-dim">
+            The game's own {binkName} is moved to {hookedName} and the mod loads it back, so video
+            keeps working. Undo puts it back.
           </p>
         )}
-      </div>
 
-      <div className="mt-2.5">
-        <CheckboxRow
-          checked={controls.binkBackup}
-          onChange={controls.onBinkBackup}
-          disabled={!bink || controls.busy !== null}
-          label="Back up the original DLL"
-          hint={
-            bink && hookedName !== null
-              ? `Keeps the game's ${controls.dllName} as ${hookedName}.`
-              : "Only used with a bink proxy name."
-          }
-        />
+        {!noOptions && controls.optionsError === null && (
+          <p className="mt-1.5 text-[11px] leading-snug text-ink-dim">
+            Names the game already ships are not offered.
+          </p>
+        )}
       </div>
 
       <p className="mt-3 border-t border-line pt-2.5 text-[11px] leading-snug text-ink-dim">
@@ -156,25 +169,15 @@ export function InstallCard({ game, release, controls }: InstallCardProps) {
       )}
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        {install === null ? (
-          <Button
-            size="sm"
-            onClick={controls.onInstall}
-            loading={controls.busy === "install"}
-            icon={<Download size={12} />}
-          >
-            Install
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            onClick={controls.onInstall}
-            loading={controls.busy === "install"}
-            icon={<Download size={12} />}
-          >
-            Update
-          </Button>
-        )}
+        <Button
+          size="sm"
+          onClick={controls.onInstall}
+          loading={controls.busy === "install"}
+          disabled={!controls.available}
+          icon={<Download size={12} />}
+        >
+          {install === null ? "Install" : "Update"}
+        </Button>
 
         {install !== null && (
           <Button

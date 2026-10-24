@@ -36,6 +36,7 @@ pub fn run() {
             commands::forget_game,
             commands::set_game_exe,
             commands::install_mod,
+            commands::proxy_names,
             commands::uninstall_mod,
             commands::release_info,
             commands::auto_update,

@@ -11,9 +11,10 @@ by hand, and edit a JSON file to change a preset. This app does that part:
   NVIDIA's published per title list is matched on top of that (6X MFG, 4X MFG, Frame Generation
   without an MFG override, or not listed), so a game whose Frame Generation plug-in comes from the
   NVIDIA app still shows up as a candidate.
-- Installs the mod DLL into the folder that holds the game executable, under a proxy name you pick.
-  It refuses to overwrite a DLL that belongs to the game, keeps an earlier mod build aside when it
-  is replaced, and handles the Bink rename on its own.
+- Installs the mod DLL into the folder that holds the game executable, under a proxy name you pick
+  from the ones that are actually usable: a name the game already ships is not offered, its own Bink
+  DLL is moved aside to `<name>Hooked.dll` when that route is the only one left, and an earlier mod
+  build is kept aside when it is replaced.
 - Undoes an install: removes the DLL, gives the game's own Bink DLL its name back, and puts the
   replaced mod build back if there was one. Settings files and logs are left alone.
 - Checks the mod's releases on startup, downloads a new build, and moves every installed game to it.
@@ -66,6 +67,7 @@ Next to the game executable that you selected:
 | File | Who owns it |
 | --- | --- |
 | the proxy DLL you picked | this app copies and removes it |
+| `<name>Hooked.dll` | only on the Bink route: the game's own DLL, renamed, restored on undo |
 | `RTXMFG-Universal.json` | the mod reads it at startup; this app edits it |
 | `RTX40MFG-UI.ini` | menu preferences; this app edits the keys it exposes |
 | `RTXMFG-Universal.status.json` | written by the mod while a game runs; this app only reads it |

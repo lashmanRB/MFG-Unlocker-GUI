@@ -6,6 +6,7 @@ import type {
   GameSettings,
   InstallInfo,
   LogFile,
+  ProxyOption,
   ReleaseInfo,
   ScanResult,
   StatusSummary,
@@ -31,10 +32,13 @@ export const api = {
       ? invoke<GameEntry>("set_game_exe", { gameId, exePath })
       : mock.setGameExe(gameId, exePath),
 
-  installMod: (gameId: string, dllName: string, bink: boolean): Promise<InstallInfo> =>
+  proxyNames: (gameId: string): Promise<ProxyOption[]> =>
+    isTauri ? invoke<ProxyOption[]>("proxy_names", { gameId }) : mock.proxyNames(gameId),
+
+  installMod: (gameId: string, dllName: string): Promise<InstallInfo> =>
     isTauri
-      ? invoke<InstallInfo>("install_mod", { gameId, dllName, bink })
-      : mock.installMod(gameId, dllName, bink),
+      ? invoke<InstallInfo>("install_mod", { gameId, dllName })
+      : mock.installMod(gameId, dllName),
 
   uninstallMod: (gameId: string): Promise<void> =>
     isTauri ? invoke<void>("uninstall_mod", { gameId }) : mock.uninstallMod(gameId),
@@ -68,27 +72,3 @@ export const api = {
   openPath: (path: string): Promise<void> =>
     isTauri ? invoke<void>("open_path", { path }) : mock.openPath(path),
 };
-
-export const proxyNames = [
-  "version.dll",
-  "dinput8.dll",
-  "winmm.dll",
-  "d3d9.dll",
-  "d3d10.dll",
-  "d3d11.dll",
-  "d3d12.dll",
-  "dxgi.dll",
-  "dsound.dll",
-  "wininet.dll",
-  "winhttp.dll",
-  "binkw64.dll",
-  "bink2w64.dll",
-  "xinput1_1.dll",
-  "xinput1_2.dll",
-  "xinput1_3.dll",
-  "xinput1_4.dll",
-  "xinput9_1_0.dll",
-  "xinputuap.dll",
-];
-
-export const binkNames = ["binkw64.dll", "bink2w64.dll"];

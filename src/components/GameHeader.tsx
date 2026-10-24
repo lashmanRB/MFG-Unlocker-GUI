@@ -88,6 +88,7 @@ export function GameHeader({
               variant={game.install === null ? "primary" : "secondary"}
               onClick={install.onInstall}
               loading={install.busy === "install"}
+              disabled={!install.available}
               icon={<Download size={12} />}
             >
               {game.install === null ? "Install" : "Update"}

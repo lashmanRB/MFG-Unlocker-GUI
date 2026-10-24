@@ -3,8 +3,8 @@ use crate::gamedir;
 use crate::install;
 use crate::model::{
     normalize_path, ApplyResult, AutoUpdateReport, ExeCandidate, GameEntry, GameSettings,
-    InstallInfo, LogFile, ReleaseInfo, ScanResult, StatusSummary, SteamLibrary, SteamScan,
-    StoredGame, Store, UpdatedGame, LOG_PREFIX,
+    InstallInfo, LogFile, ProxyOption, ReleaseInfo, ScanResult, StatusSummary, SteamLibrary,
+    SteamScan, StoredGame, Store, UpdatedGame, LOG_PREFIX,
 };
 use crate::nvidia;
 use crate::portable;
@@ -412,7 +412,7 @@ pub async fn set_game_exe(game_id: String, exe_path: String) -> Result<GameEntry
     .map_err(|error| error.to_string())?
 }
 
-fn install_at(dir: &Path, game_id: &str, dll_name: &str, bink: bool) -> Result<InstallInfo, String> {
+fn install_at(dir: &Path, game_id: &str, dll_name: &str) -> Result<InstallInfo, String> {
     let name = dll_name.trim().to_ascii_lowercase();
     let mut current = store::load(dir);
     let mut record = find_record(&current, game_id)?;
@@ -430,7 +430,7 @@ fn install_at(dir: &Path, game_id: &str, dll_name: &str, bink: bool) -> Result<I
         ));
     }
 
-    let mut info = install::install(dir, &work, &name, bink)?;
+    let mut info = install::install(dir, &work, &name)?;
     let version = info
         .version
         .clone()
@@ -490,14 +490,10 @@ fn uninstall_at(dir: &Path, game_id: &str) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn install_mod(
-    game_id: String,
-    dll_name: String,
-    bink: bool,
-) -> Result<InstallInfo, String> {
+pub async fn install_mod(game_id: String, dll_name: String) -> Result<InstallInfo, String> {
     tauri::async_runtime::spawn_blocking(move || {
         let dir = portable::data_dir()?;
-        install_at(&dir, &game_id, &dll_name, bink)
+        install_at(&dir, &game_id, &dll_name)
     })
     .await
     .map_err(|error| error.to_string())?
@@ -543,25 +539,24 @@ fn auto_update_at(dir: &Path, refresh: bool) -> AutoUpdateReport {
     report.downloaded = had_download;
 
     let store = store::load(dir);
-    let stale: Vec<(String, String, String, bool)> = store
+    let stale: Vec<(String, String, String)> = store
         .games
         .iter()
         .filter(|record| record.dll_name.is_some())
         .filter(|record| record.version.as_deref() != Some(latest.tag.as_str()))
         .filter_map(|record| {
             let dll = record.dll_name.clone()?;
-            let bink = matches!(dll.as_str(), "binkw64.dll" | "bink2w64.dll");
-            Some((record.id.clone(), record.name.clone(), dll, bink))
+            Some((record.id.clone(), record.name.clone(), dll))
         })
         .collect();
 
-    for (game_id, name, dll, bink) in stale {
+    for (game_id, name, dll) in stale {
         let from = store
             .games
             .iter()
             .find(|record| record.id == game_id)
             .and_then(|record| record.version.clone());
-        match install_at(dir, &game_id, &dll, bink) {
+        match install_at(dir, &game_id, &dll) {
             Ok(_) => report.updated.push(UpdatedGame {
                 game_id,
                 name,
@@ -591,6 +586,86 @@ fn work_dir_in(dir: &Path, game_id: &str) -> Result<PathBuf, String> {
     let record = find_record(&current, game_id)?;
     let install_dir = install_dir_of(&record);
     Ok(exe_dir_of(record.exe_path.as_deref()).unwrap_or(install_dir))
+}
+
+// The names the mod can be installed as. Bink names are kept at the end because
+// they only apply to a game that ships that DLL.
+const PROXY_NAMES: &[&str] = &[
+    "version.dll",
+    "dinput8.dll",
+    "winmm.dll",
+    "d3d9.dll",
+    "d3d10.dll",
+    "d3d11.dll",
+    "d3d12.dll",
+    "dxgi.dll",
+    "dsound.dll",
+    "wininet.dll",
+    "winhttp.dll",
+    "xinput1_1.dll",
+    "xinput1_2.dll",
+    "xinput1_3.dll",
+    "xinput1_4.dll",
+    "xinput9_1_0.dll",
+    "xinputuap.dll",
+    "binkw64.dll",
+    "bink2w64.dll",
+];
+
+fn bink_backup_of(name: &str) -> Option<String> {
+    let lower = name.to_ascii_lowercase();
+    let stem = lower.strip_suffix(".dll")?;
+    if stem == "binkw64" || stem == "bink2w64" {
+        Some(format!("{stem}Hooked.dll"))
+    } else {
+        None
+    }
+}
+
+// Only names that can actually be used: a file the game already ships keeps its
+// name, and a Bink name is only offered when that DLL is there to be loaded back.
+fn proxy_options_at(dir: &Path, game_id: &str) -> Result<Vec<ProxyOption>, String> {
+    let current = store::load(dir);
+    let record = find_record(&current, game_id)?;
+    let work = work_dir_in(dir, game_id)?;
+    let installed = record.dll_name.clone();
+    let mut options = Vec::new();
+
+    for name in PROXY_NAMES {
+        let taken = work.join(name).is_file();
+        let state = if installed.as_deref() == Some(*name) {
+            "ours"
+        } else if let Some(backup) = bink_backup_of(name) {
+            let hooked = work.join(backup).is_file();
+            if taken && !hooked {
+                "bink"
+            } else {
+                continue;
+            }
+        } else if taken {
+            continue;
+        } else {
+            "free"
+        };
+        options.push(ProxyOption {
+            name: (*name).to_string(),
+            state: state.to_string(),
+        });
+    }
+
+    // The current install first, then names nothing occupies, then the Bink route.
+    options.sort_by_key(|option| match option.state.as_str() {
+        "ours" => 0,
+        "free" => 1,
+        _ => 2,
+    });
+    Ok(options)
+}
+
+#[tauri::command(async)]
+pub fn proxy_names(game_id: String) -> Result<Vec<ProxyOption>, String> {
+    let dir = portable::data_dir()?;
+    proxy_options_at(&dir, &game_id)
 }
 
 fn game_work_dir(game_id: &str) -> Result<PathBuf, String> {
@@ -768,7 +843,7 @@ mod tests {
         let work = work_dir_in(&data, &id).unwrap();
         assert_eq!(work, game_dir.join("Binaries"));
 
-        let info = install_at(&data, &id, "WINMM.DLL", false).unwrap();
+        let info = install_at(&data, &id, "WINMM.DLL").unwrap();
         assert_eq!(info.dll_name, "winmm.dll");
         assert!(work.join("winmm.dll").is_file());
         assert_eq!(
@@ -777,7 +852,7 @@ mod tests {
         );
 
         seed_release(&data, "v2.0.0", b"MZ second build RTXMFG\n");
-        let update = install_at(&data, &id, "winmm.dll", false).unwrap();
+        let update = install_at(&data, &id, "winmm.dll").unwrap();
         assert_eq!(update.version.as_deref(), Some("v2.0.0"));
         assert!(update.previous.is_some());
         assert_eq!(
@@ -842,6 +917,40 @@ mod tests {
         // a second pass finds nothing left to do
         let again = auto_update_at(&data, false);
         assert!(again.updated.is_empty());
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn proxy_options_only_offer_usable_names() {
+        let root = scratch("proxies");
+        let data = root.join("data");
+        let game_dir = root.join("game");
+        fs::create_dir_all(&data).unwrap();
+        seed_release(&data, "v1.0.0", b"MZ build RTXMFG\n");
+        let id = seed_game(&data, &game_dir);
+        let work = work_dir_in(&data, &id).unwrap();
+
+        // the game already ships a version.dll and a Bink DLL
+        fs::write(work.join("version.dll"), b"the game's own proxy").unwrap();
+        fs::write(work.join("binkw64.dll"), b"the game's bink").unwrap();
+
+        let options = proxy_options_at(&data, &id).unwrap();
+        assert!(options.iter().all(|option| option.name != "version.dll"));
+        assert!(options.iter().all(|option| option.name != "bink2w64.dll"));
+        let bink = options
+            .iter()
+            .find(|option| option.name == "binkw64.dll")
+            .expect("the bink route is offered");
+        assert_eq!(bink.state, "bink");
+        assert_eq!(options.first().unwrap().name, "dinput8.dll");
+        assert!(options.iter().all(|option| option.state != "taken"));
+
+        // once the mod is in, its name comes first and is marked as ours
+        install_at(&data, &id, "winmm.dll").unwrap();
+        let options = proxy_options_at(&data, &id).unwrap();
+        assert_eq!(options[0].name, "winmm.dll");
+        assert_eq!(options[0].state, "ours");
+        assert!(options.iter().all(|option| option.state != "taken"));
         let _ = fs::remove_dir_all(&root);
     }
 
