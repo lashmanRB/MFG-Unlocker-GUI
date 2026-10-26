@@ -22,8 +22,9 @@ fn game_id_for(install_dir: &Path) -> String {
     format!("game:{}", normalize_path(&install_dir.to_string_lossy()))
 }
 
-// Steam ships a 460x215 header for most titles, a store capsule for some and only
-// hero art for the newest ones. The UI walks this list until one loads.
+// Plain CDN paths for the 460x215 cover. The store API header for the title is
+// put in front of these later; the hero art at the end is only a last resort,
+// it is a wide background, not a cover.
 fn cover_urls(app_id: Option<u32>) -> Vec<String> {
     let Some(id) = app_id else {
         return Vec::new();
@@ -260,7 +261,8 @@ fn scan_blocking(force: bool) -> Result<ScanResult, String> {
     });
 
     // Store art for new titles sits behind a hash directory, so the plain CDN
-    // paths miss. Resolve those and add them after the legacy candidates.
+    // paths miss and only the wide hero art answers. The resolved store header
+    // goes first so those games get their cover instead of the background.
     let app_ids: Vec<u32> = steam_entries
         .iter()
         .filter_map(|entry| entry.app_id)
@@ -269,7 +271,7 @@ fn scan_blocking(force: bool) -> Result<ScanResult, String> {
     for entry in &mut steam_entries {
         let Some(app_id) = entry.app_id else { continue };
         if let Some(url) = cover_catalog.url_for(app_id) {
-            entry.cover_urls.push(url.clone());
+            entry.cover_urls.insert(0, url.clone());
         }
     }
 
