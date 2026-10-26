@@ -177,9 +177,14 @@ where
     })
 }
 
-fn scan_blocking() -> Result<ScanResult, String> {
+fn scan_blocking(force: bool) -> Result<ScanResult, String> {
     let dir = portable::data_dir()?;
-    let nvidia_list = nvidia::load(&dir, true);
+    // The caches answer for a normal scan; a forced one asks the network again.
+    let nvidia_list = if force {
+        nvidia::refresh(&dir).unwrap_or_else(|_| nvidia::load(&dir, true))
+    } else {
+        nvidia::load(&dir, true)
+    };
     let mut store = store::load(&dir);
     let mut errors = Vec::new();
     let mut libraries = Vec::new();
@@ -260,7 +265,7 @@ fn scan_blocking() -> Result<ScanResult, String> {
         .iter()
         .filter_map(|entry| entry.app_id)
         .collect();
-    let cover_catalog = crate::covers::ensure(&dir, &app_ids, true);
+    let cover_catalog = crate::covers::ensure(&dir, &app_ids, true, force);
     for entry in &mut steam_entries {
         let Some(app_id) = entry.app_id else { continue };
         if let Some(url) = cover_catalog.url_for(app_id) {
@@ -335,22 +340,10 @@ fn scan_blocking() -> Result<ScanResult, String> {
 }
 
 #[tauri::command]
-pub async fn scan_all() -> Result<ScanResult, String> {
-    tauri::async_runtime::spawn_blocking(scan_blocking)
+pub async fn scan_all(force: bool) -> Result<ScanResult, String> {
+    tauri::async_runtime::spawn_blocking(move || scan_blocking(force))
         .await
         .map_err(|error| error.to_string())?
-}
-
-// The list is checked once a week on its own; this is the button that says
-// "now", so the user does not sit on a stale list for days.
-#[tauri::command]
-pub async fn refresh_nvidia() -> Result<usize, String> {
-    tauri::async_runtime::spawn_blocking(|| {
-        let dir = portable::data_dir()?;
-        nvidia::refresh(&dir).map(|index| index.entries.len())
-    })
-    .await
-    .map_err(|error| error.to_string())?
 }
 
 #[tauri::command]

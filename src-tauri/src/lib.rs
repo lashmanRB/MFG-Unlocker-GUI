@@ -32,7 +32,6 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             app_version,
             commands::scan_all,
-            commands::refresh_nvidia,
             commands::rescan_game,
             commands::add_manual_game,
             commands::forget_game,

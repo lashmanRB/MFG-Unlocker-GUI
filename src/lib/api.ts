@@ -16,10 +16,8 @@ import { mock } from "./mock";
 export const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
 export const api = {
-  scanAll: (): Promise<ScanResult> => (isTauri ? invoke<ScanResult>("scan_all") : mock.scanAll()),
-
-  refreshNvidia: (): Promise<number> =>
-    isTauri ? invoke<number>("refresh_nvidia") : mock.refreshNvidia(),
+  scanAll: (force = false): Promise<ScanResult> =>
+    isTauri ? invoke<ScanResult>("scan_all", { force }) : mock.scanAll(),
 
   rescanGame: (gameId: string): Promise<GameEntry> =>
     isTauri ? invoke<GameEntry>("rescan_game", { gameId }) : mock.rescanGame(gameId),

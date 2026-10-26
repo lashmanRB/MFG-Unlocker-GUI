@@ -49,7 +49,7 @@ fn stale(catalog: &Catalog, now: u64) -> bool {
     catalog.fetched_at == 0 || now.saturating_sub(catalog.fetched_at) > TTL_SECONDS
 }
 
-pub fn ensure(data_dir: &Path, app_ids: &[u32], allow_network: bool) -> Catalog {
+pub fn ensure(data_dir: &Path, app_ids: &[u32], allow_network: bool, force: bool) -> Catalog {
     let mut catalog = load(data_dir);
     let now = crate::release::unix_now();
     let missing: Vec<u32> = app_ids
@@ -58,11 +58,11 @@ pub fn ensure(data_dir: &Path, app_ids: &[u32], allow_network: bool) -> Catalog 
         .filter(|id| !catalog.covers.contains_key(id))
         .collect();
 
-    if !allow_network || (missing.is_empty() && !stale(&catalog, now)) {
+    if !allow_network || (missing.is_empty() && !stale(&catalog, now) && !force) {
         return catalog;
     }
 
-    let wanted = if stale(&catalog, now) {
+    let wanted = if stale(&catalog, now) || force {
         app_ids.to_vec()
     } else {
         missing
@@ -197,7 +197,7 @@ mod tests {
         );
         save(&dir, &catalog);
 
-        let read = ensure(&dir, &[3751950], false);
+        let read = ensure(&dir, &[3751950], false, false);
         assert_eq!(read.url_for(3751950).map(String::as_str), Some(catalog.covers[&3751950].as_str()));
         assert!(read.url_for(1091500).is_none());
         assert!(!stale(&read, crate::release::unix_now()));

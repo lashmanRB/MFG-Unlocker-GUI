@@ -17,9 +17,9 @@ export function useScan() {
   const started = useRef(false);
   const hasResult = useRef(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (force = false) => {
     setBusy("scan");
-    const response = await attempt(() => api.scanAll());
+    const response = await attempt(() => api.scanAll(force));
     if (response.ok) {
       hasResult.current = true;
       setResult(response.value);

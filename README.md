@@ -24,6 +24,8 @@ from the mod's releases and checks the published SHA-256 before copying anything
 - Undoes an install completely: removes the DLL, gives the game's own Bink DLL its name back, and
   restores the mod build that was replaced.
 - Checks the mod's releases on startup, downloads a new build, and moves every installed game to it.
+- One **Refresh** button in the top bar pulls everything again in one go: the mod release, NVIDIA's
+  per-title list, cover art and the game list.
 - Edits all of the mod's settings from outside the game: mode, multiplier, dynamic target, the three
   preset families, V-Sync, the Reflex FPS cap, menu language and key, and the two compatibility
   switches.
@@ -111,8 +113,9 @@ reads as **unknown**.
 
 NVIDIA publishes a per-title table of DLSS overrides, including the Multi Frame Generation multiplier
 they allow. The app downloads it once a week into `data\nvidia-overrides.json` and matches your game
-names against it, with a tolerance for edition suffixes. The small refresh icon beside the list age in
-the Overview tab fetches it again on the spot, then rescans so the tiers are current.
+names against it, with a tolerance for edition suffixes. The **Refresh** button in the top bar pulls
+everything again on the spot: the mod release and any pending updates, NVIDIA's list, cover art and
+the game list.
 
 | Tier | Meaning |
 | --- | --- |

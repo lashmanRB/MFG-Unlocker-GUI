@@ -21,7 +21,6 @@ interface WorkspaceScreenProps {
   settingsEpoch: number;
   onGameUpdated: (entry: GameEntry) => void;
   onDirtyChange: (dirty: boolean) => void;
-  onRefreshNvidia: () => Promise<void>;
 }
 
 export function WorkspaceScreen({
@@ -31,7 +30,6 @@ export function WorkspaceScreen({
   settingsEpoch,
   onGameUpdated,
   onDirtyChange,
-  onRefreshNvidia,
 }: WorkspaceScreenProps) {
   const toast = useToast();
   const [tab, setTab] = useState<WorkspaceTab>("overview");
@@ -195,7 +193,6 @@ export function WorkspaceScreen({
           nvidiaFetchedAt={nvidiaFetchedAt}
           install={install}
           onGameUpdated={onGameUpdated}
-          onRefreshNvidia={onRefreshNvidia}
         />
       </div>
 

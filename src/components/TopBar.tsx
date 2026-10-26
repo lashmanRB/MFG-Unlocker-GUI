@@ -8,20 +8,20 @@ import type { ReleaseInfo } from "../lib/types";
 interface TopBarProps {
   release: ReleaseInfo | null;
   releaseFailed: boolean;
-  scanning: boolean;
+  refreshing: boolean;
   adding: boolean;
   zoom: ZoomControls;
-  onRescan: () => void;
+  onRefresh: () => void;
   onAddGame: () => void;
 }
 
 export function TopBar({
   release,
   releaseFailed,
-  scanning,
+  refreshing,
   adding,
   zoom,
-  onRescan,
+  onRefresh,
   onAddGame,
 }: TopBarProps) {
   return (
@@ -46,8 +46,8 @@ export function TopBar({
 
       <div className="ml-auto flex items-center gap-2">
         <ZoomControl zoom={zoom} />
-        <Button size="sm" onClick={onRescan} loading={scanning} icon={<RefreshCw size={12} />}>
-          Rescan
+        <Button size="sm" onClick={onRefresh} loading={refreshing} icon={<RefreshCw size={12} />}>
+          Refresh
         </Button>
         <Button size="sm" onClick={onAddGame} loading={adding} icon={<Plus size={13} />}>
           Add game

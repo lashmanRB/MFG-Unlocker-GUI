@@ -41,6 +41,7 @@ export default function MainScreen() {
   const [settingsDirty, setSettingsDirty] = useState(false);
   const [settingsEpoch, setSettingsEpoch] = useState(0);
   const [pending, setPending] = useState<PendingIntent | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const autoUpdateStarted = useRef(false);
   const autoUpdateBusy = useRef(false);
 
@@ -137,8 +138,11 @@ export default function MainScreen() {
   };
 
   const scanAndCheckReleases = useCallback(async () => {
-    await rescan();
-    await runAutoUpdate(false);
+    setRefreshing(true);
+    // one button, everything: the mod release, NVIDIA's list, cover art, the list
+    await rescan(true);
+    await runAutoUpdate(true);
+    setRefreshing(false);
   }, [rescan, runAutoUpdate]);
 
   const runRescan = () => {
@@ -148,20 +152,6 @@ export default function MainScreen() {
     }
     void scanAndCheckReleases();
   };
-
-  const refreshNvidiaList = useCallback(async () => {
-    const response = await attempt(() => api.refreshNvidia());
-    if (!response.ok) {
-      toast("error", `NVIDIA's list could not be fetched: ${response.message}`);
-      return;
-    }
-    toast("ok", `NVIDIA list refreshed: ${response.value} titles`);
-    if (settingsDirty) {
-      setPending({ kind: "rescan" });
-      return;
-    }
-    void rescan();
-  }, [rescan, settingsDirty, toast]);
 
   const selectGame = (id: string) => {
     if (id === selectedId) return;
@@ -222,7 +212,6 @@ export default function MainScreen() {
         settingsEpoch={settingsEpoch}
         onGameUpdated={updateGame}
         onDirtyChange={setSettingsDirty}
-        onRefreshNvidia={refreshNvidiaList}
       />
     );
   } else {
@@ -238,10 +227,10 @@ export default function MainScreen() {
       <TopBar
         release={release}
         releaseFailed={releaseFailed}
-        scanning={scanning}
+        refreshing={refreshing || scanning}
         adding={adding}
         zoom={zoom}
-        onRescan={runRescan}
+        onRefresh={runRescan}
         onAddGame={addFolder}
       />
       <div className="flex min-h-0 flex-1">
