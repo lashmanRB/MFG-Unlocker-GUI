@@ -104,8 +104,8 @@ The scan looks in the folder of the chosen executable, its parent and its grandp
 
 Frame generation plus Streamline reads as **supported**. Frame generation alone reads as **likely**,
 because the mod can often attach to a statically linked integration too. Streamline without frame
-generation reads as **no frame gen**, and nothing found reads as **unknown** unless NVIDIA's list says
-otherwise.
+generation, or DLSS Super Resolution on its own, reads as **no frame gen**, and nothing found at all
+reads as **unknown**.
 
 ### NVIDIA's list
 
@@ -121,9 +121,9 @@ the Overview tab fetches it again on the spot, then rescans so the tiers are cur
 | Frame Generation, no MFG override | frame generation is listed, but no MFG multiplier |
 | not listed | no entry, so the multiplier comes from the game's own integration |
 
-When the local probe finds no DLSS files but NVIDIA does list the title, the state becomes **likely**
-and a note says so: the plug-in probably comes from the NVIDIA app rather than the game folder. That
-case is common and it is why the list is worth having.
+When the probe finds no frame generation files but NVIDIA does list the title, the state becomes
+**likely** and a note says so: the plug-in probably comes from the NVIDIA app rather than the game
+folder. That case is common and it is why the list is worth having.
 
 ## Installing the mod
 

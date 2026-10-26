@@ -72,7 +72,7 @@ fn make_entry(
     if let Some(entry) = nvidia_list.tier_for(name) {
         report.nvidia_tier = entry.tier;
         report.nvidia_name = Some(entry.name.clone());
-        if report.state == "unknown" {
+        if report.state == "unknown" || report.state == "no-frame-gen" {
             report.state = "likely".to_string();
             report.notes.push(format!(
                 "NVIDIA lists {} for this title ({}), so the Frame Generation files may come from the NVIDIA app rather than the game folder.",

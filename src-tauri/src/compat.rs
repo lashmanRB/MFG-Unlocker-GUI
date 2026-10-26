@@ -21,6 +21,8 @@ pub fn classify(game_dir: &Path, exe_dir: Option<&Path>) -> CompatReport {
             notes.push("Streamline is present without a DLSS frame generation plug-in. Frame Generation has to come from the game or from an NVIDIA app override.".into());
             "no-frame-gen"
         }
+        // DLSS is integrated, just not frame generation, so that is a real answer
+        (false, false) if probe.super_res => "no-frame-gen",
         (false, false) => {
             notes.push("No DLSS files beside the executable. The game may still receive Frame Generation through an NVIDIA app override.".into());
             "unknown"
@@ -116,7 +118,27 @@ fn registry_gpu_names() -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::describe_gpu;
+    use super::{classify, describe_gpu};
+
+    #[test]
+    fn super_resolution_alone_reads_as_no_frame_gen() {
+        let root = std::env::temp_dir().join(format!("mfg-classify-{}", std::process::id()));
+        let game = root.join("game");
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(&game).unwrap();
+        std::fs::write(game.join("nvngx_dlss.dll"), b"x").unwrap();
+
+        let report = classify(&game, None);
+        assert_eq!(report.state, "no-frame-gen");
+        assert!(report.has_super_res);
+        assert!(!report.has_frame_gen);
+
+        std::fs::remove_file(game.join("nvngx_dlss.dll")).unwrap();
+        let report = classify(&game, None);
+        assert_eq!(report.state, "unknown");
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
 
     #[test]
     fn families_follow_the_card_name() {

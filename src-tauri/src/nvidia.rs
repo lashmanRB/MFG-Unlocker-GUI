@@ -40,10 +40,16 @@ impl Index {
             }
             let exact = entry.key == wanted;
             // Editions and subtitles hang off the end of the store name, so a
-            // short extra tail still counts as the same title.
-            let tail_matches = entry.key.len() >= 4
-                && wanted.starts_with(&entry.key)
-                && wanted.len() - entry.key.len() <= 14;
+            // short extra tail still counts as the same title. A number or a
+            // roman numeral is a different game though: "Red Dead Redemption 2"
+            // must not borrow the row of "Red Dead Redemption".
+            let tail = wanted.strip_prefix(entry.key.as_str()).unwrap_or_default();
+            let edition_tail = !tail.is_empty()
+                && !tail.starts_with(|character: char| character.is_ascii_digit())
+                && !tail
+                    .chars()
+                    .all(|character| "ivxlcdm".contains(character));
+            let tail_matches = entry.key.len() >= 4 && edition_tail && tail.len() <= 14;
             if !exact && !tail_matches {
                 continue;
             }
@@ -271,6 +277,28 @@ mod tests {
         );
         assert!(index.tier_for("Baldur's Gate 3").is_none());
         assert!(index.tier_for("").is_none());
+    }
+
+    #[test]
+    fn a_sequel_does_not_borrow_the_predecessors_entry() {
+        let sample = r#"{"data": [
+          {"name": "Red Dead Redemption", "dlss multi frame generation": "", "dlss frame generation": "Yes"},
+          {"name": "Lies of P", "dlss multi frame generation": "NV, 4X", "dlss frame generation": "Yes"}
+        ]}"#;
+        let index = Index {
+            entries: parse(sample).unwrap(),
+            fetched_at: None,
+        };
+        assert_eq!(
+            index.tier_for("Red Dead Redemption").map(|entry| entry.tier),
+            Some(2)
+        );
+        assert!(index.tier_for("Red Dead Redemption 2").is_none());
+        assert!(index.tier_for("Red Dead Redemption II").is_none());
+        assert_eq!(
+            index.tier_for("Lies of P: Overture").map(|entry| entry.tier),
+            Some(4)
+        );
     }
 
     #[test]
