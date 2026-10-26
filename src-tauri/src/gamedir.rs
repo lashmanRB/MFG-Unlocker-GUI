@@ -191,6 +191,7 @@ pub fn probe_dlls(exe_dir: &Path) -> DllProbe {
     for _ in 0..3 {
         let Some(dir) = current else { break };
         scan_dlls(dir, &mut probe);
+        scan_plugin_dlls(dir, &mut probe);
         if probe.complete() {
             break;
         }
@@ -198,6 +199,22 @@ pub fn probe_dlls(exe_dir: &Path) -> DllProbe {
     }
 
     probe
+}
+
+// Unreal games tuck DLSS and Streamline into Plugins\<name>\Binaries\ThirdParty\
+// Win64 instead of beside the executable, like Deliver Us Mars and The Last
+// Caretaker do.
+fn scan_plugin_dlls(dir: &Path, probe: &mut DllProbe) {
+    let Ok(plugins) = fs::read_dir(dir.join("Plugins")) else {
+        return;
+    };
+    for plugin in plugins.flatten() {
+        if !plugin.path().is_dir() {
+            continue;
+        }
+        let third_party = plugin.path().join("Binaries").join("ThirdParty").join("Win64");
+        scan_dlls(&third_party, probe);
+    }
 }
 
 fn scan_dlls(dir: &Path, probe: &mut DllProbe) {
@@ -255,6 +272,40 @@ mod tests {
             name: name.to_string(),
             size,
         }
+    }
+
+    #[test]
+    fn finds_the_unreal_plugins_tree() {
+        let root = std::env::temp_dir().join(format!("mfg-probe-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        let exe_dir = root.join("Project").join("Binaries").join("Win64");
+        let streamline = root
+            .join("Project")
+            .join("Plugins")
+            .join("Streamline")
+            .join("Binaries")
+            .join("ThirdParty")
+            .join("Win64");
+        let dlss = root
+            .join("Project")
+            .join("Plugins")
+            .join("DLSS")
+            .join("Binaries")
+            .join("ThirdParty")
+            .join("Win64");
+        fs::create_dir_all(&exe_dir).unwrap();
+        fs::create_dir_all(&streamline).unwrap();
+        fs::create_dir_all(&dlss).unwrap();
+        fs::write(streamline.join("sl.dlss_g.dll"), b"x").unwrap();
+        fs::write(streamline.join("sl.interposer.dll"), b"x").unwrap();
+        fs::write(dlss.join("nvngx_dlss.dll"), b"x").unwrap();
+
+        let probe = probe_dlls(&exe_dir);
+        assert!(probe.frame_gen);
+        assert!(probe.streamline);
+        assert!(probe.super_res);
+
+        let _ = fs::remove_dir_all(&root);
     }
 
     #[test]

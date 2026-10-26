@@ -94,7 +94,8 @@ from the real answer, which is the status file after a launch.
 
 ### The files the mod hooks
 
-The scan looks in the folder of the chosen executable, its parent and its grandparent:
+The scan looks in the folder of the chosen executable, its parent and its grandparent, and in the
+`Plugins\<name>\Binaries\ThirdParty\Win64` folders Unreal games keep DLSS and Streamline in:
 
 | Found | Meaning |
 | --- | --- |
