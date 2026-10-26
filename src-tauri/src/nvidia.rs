@@ -92,6 +92,21 @@ fn meta_path(data_dir: &Path) -> PathBuf {
     data_dir.join(META_FILE)
 }
 
+// Fetches past the cache and writes it, so a manual refresh shows up in the
+// next scan without waiting for the weekly check.
+pub fn refresh(data_dir: &Path) -> Result<Index, String> {
+    let text = fetch()?;
+    let entries = parse(&text).ok_or_else(|| "NVIDIA's game list could not be read".to_string())?;
+    if entries.is_empty() {
+        return Err("NVIDIA's game list was empty".to_string());
+    }
+    write_cache(data_dir, &text, &entries);
+    Ok(Index {
+        entries,
+        fetched_at: Some(crate::release::unix_now()),
+    })
+}
+
 pub fn load(data_dir: &Path, allow_network: bool) -> Index {
     let meta = read_meta(data_dir);
     let fresh = meta
@@ -103,14 +118,8 @@ pub fn load(data_dir: &Path, allow_network: bool) -> Index {
         .unwrap_or(false);
 
     if !fresh && allow_network {
-        if let Ok(text) = fetch() {
-            if let Some(entries) = parse(&text) {
-                write_cache(data_dir, &text, &entries);
-                return Index {
-                    entries,
-                    fetched_at: Some(crate::release::unix_now()),
-                };
-            }
+        if let Ok(index) = refresh(data_dir) {
+            return index;
         }
         write_meta(
             data_dir,

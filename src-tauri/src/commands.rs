@@ -341,6 +341,18 @@ pub async fn scan_all() -> Result<ScanResult, String> {
         .map_err(|error| error.to_string())?
 }
 
+// The list is checked once a week on its own; this is the button that says
+// "now", so the user does not sit on a stale list for days.
+#[tauri::command]
+pub async fn refresh_nvidia() -> Result<usize, String> {
+    tauri::async_runtime::spawn_blocking(|| {
+        let dir = portable::data_dir()?;
+        nvidia::refresh(&dir).map(|index| index.entries.len())
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
 #[tauri::command]
 pub async fn rescan_game(game_id: String) -> Result<GameEntry, String> {
     tauri::async_runtime::spawn_blocking(move || {

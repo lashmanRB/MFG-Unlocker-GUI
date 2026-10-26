@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, CircleDot, Info, Minus } from "lucide-react";
+import { Check, CircleDot, Info, Minus, RefreshCw } from "lucide-react";
 import { api } from "../lib/api";
 import { attempt } from "../lib/attempt";
 import { formatBytes, relativeTime } from "../lib/format";
@@ -17,6 +17,7 @@ interface OverviewTabProps {
   nvidiaFetchedAt: number | null;
   install: InstallControls;
   onGameUpdated: (entry: GameEntry) => void;
+  onRefreshNvidia: () => Promise<void>;
 }
 
 interface Probe {
@@ -37,12 +38,14 @@ export function OverviewTab({
   nvidiaFetchedAt,
   install,
   onGameUpdated,
+  onRefreshNvidia,
 }: OverviewTabProps) {
   const toast = useToast();
   const [selectedExe, setSelectedExe] = useState<string | null>(
     game.exePath ?? game.exeCandidates[0]?.path ?? null,
   );
   const [applying, setApplying] = useState(false);
+  const [refreshingList, setRefreshingList] = useState(false);
 
   useEffect(() => {
     setSelectedExe(game.exePath ?? game.exeCandidates[0]?.path ?? null);
@@ -75,6 +78,12 @@ export function OverviewTab({
     toast("ok", "Game executable set");
   };
 
+  const refreshList = async () => {
+    setRefreshingList(true);
+    await onRefreshNvidia();
+    setRefreshingList(false);
+  };
+
   return (
     <div className="grid gap-3 p-4 @3xl:grid-cols-[minmax(0,1fr)_328px]">
       <div className="flex min-w-0 flex-col gap-3">
@@ -89,6 +98,16 @@ export function OverviewTab({
                   ? "NVIDIA list unavailable"
                   : `NVIDIA list ${relativeTime(nvidiaFetchedAt)}`}
               </span>
+              <button
+                type="button"
+                title="Fetch NVIDIA's list now"
+                aria-label="Fetch NVIDIA's list now"
+                disabled={refreshingList}
+                onClick={refreshList}
+                className="rounded-[3px] p-0.5 text-ink-dim transition-colors duration-150 ease-out hover:bg-hover hover:text-ink disabled:opacity-40"
+              >
+                <RefreshCw size={11} className={refreshingList ? "animate-spin" : undefined} />
+              </button>
             </span>
           }
         >

@@ -149,6 +149,20 @@ export default function MainScreen() {
     void scanAndCheckReleases();
   };
 
+  const refreshNvidiaList = useCallback(async () => {
+    const response = await attempt(() => api.refreshNvidia());
+    if (!response.ok) {
+      toast("error", `NVIDIA's list could not be fetched: ${response.message}`);
+      return;
+    }
+    toast("ok", `NVIDIA list refreshed: ${response.value} titles`);
+    if (settingsDirty) {
+      setPending({ kind: "rescan" });
+      return;
+    }
+    void rescan();
+  }, [rescan, settingsDirty, toast]);
+
   const selectGame = (id: string) => {
     if (id === selectedId) return;
     if (settingsDirty) {
@@ -208,6 +222,7 @@ export default function MainScreen() {
         settingsEpoch={settingsEpoch}
         onGameUpdated={updateGame}
         onDirtyChange={setSettingsDirty}
+        onRefreshNvidia={refreshNvidiaList}
       />
     );
   } else {

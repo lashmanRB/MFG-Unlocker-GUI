@@ -403,6 +403,8 @@ function logsFor(game: GameEntry): LogFile[] {
 }
 
 export const mock = {
+  refreshNvidia: async (): Promise<number> => 407,
+
   scanAll: async (): Promise<ScanResult> => {
     if (mockFlags.scanDelayMs > 0) {
       await new Promise<void>((resolve) => {

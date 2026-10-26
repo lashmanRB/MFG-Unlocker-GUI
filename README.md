@@ -111,7 +111,8 @@ otherwise.
 
 NVIDIA publishes a per-title table of DLSS overrides, including the Multi Frame Generation multiplier
 they allow. The app downloads it once a week into `data\nvidia-overrides.json` and matches your game
-names against it, with a tolerance for edition suffixes:
+names against it, with a tolerance for edition suffixes. The small refresh icon beside the list age in
+the Overview tab fetches it again on the spot, then rescans so the tiers are current.
 
 | Tier | Meaning |
 | --- | --- |
