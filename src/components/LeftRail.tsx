@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 import { Callout } from "./Callout";
 import { GameRow } from "./GameRow";
@@ -48,6 +48,17 @@ export function LeftRail({
 }: LeftRailProps) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const listRef = useRef<HTMLDivElement>(null);
+  const scrollMemory = useRef(0);
+
+  // Installing a game moves its row to the top of the list, which drags the
+  // view along with it. Keep the rail where the user left it instead.
+  useLayoutEffect(() => {
+    const box = listRef.current;
+    if (box !== null && box.scrollTop !== scrollMemory.current) {
+      box.scrollTop = scrollMemory.current;
+    }
+  });
 
   const options = useMemo<FilterOption[]>(() => {
     const supported = games.filter((game) => matchesFilter(game, "supported")).length;
@@ -135,7 +146,13 @@ export function LeftRail({
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div
+        ref={listRef}
+        onScroll={(event) => {
+          scrollMemory.current = event.currentTarget.scrollTop;
+        }}
+        className="min-h-0 flex-1 overflow-y-auto"
+      >
         {scanErrors.length > 0 && (
           <div className="border-b border-line p-2">
             <Callout tone="warn">
