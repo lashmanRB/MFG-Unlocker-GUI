@@ -7,6 +7,7 @@ import type { GameEntry, ProxyOption, ReleaseInfo } from "../lib/types";
 import { GameHeader } from "../components/GameHeader";
 import { InstallActionDialog } from "../components/InstallActionDialog";
 import type { InstallDialogMode } from "../components/InstallActionDialog";
+import { SetupWizard } from "./SetupWizard";
 import { TabBar } from "../components/TabBar";
 import type { WorkspaceTab } from "../components/TabBar";
 import { useToast } from "../hooks/useToast";
@@ -21,6 +22,7 @@ interface WorkspaceScreenProps {
   settingsEpoch: number;
   onGameUpdated: (entry: GameEntry) => void;
   onDirtyChange: (dirty: boolean) => void;
+  onSettingsSaved: () => void;
 }
 
 export function WorkspaceScreen({
@@ -30,6 +32,7 @@ export function WorkspaceScreen({
   settingsEpoch,
   onGameUpdated,
   onDirtyChange,
+  onSettingsSaved,
 }: WorkspaceScreenProps) {
   const toast = useToast();
   const [tab, setTab] = useState<WorkspaceTab>("overview");
@@ -40,6 +43,7 @@ export function WorkspaceScreen({
   const [busy, setBusy] = useState<InstallBusy>(null);
   const [installError, setInstallError] = useState<string | null>(null);
   const [dialog, setDialog] = useState<InstallDialogMode | null>(null);
+  const [wizard, setWizard] = useState(false);
   const [launching, setLaunching] = useState(false);
   const [opening, setOpening] = useState(false);
   const optionsTicket = useRef(0);
@@ -95,6 +99,7 @@ export function WorkspaceScreen({
     onGameUpdated({ ...game, install: response.value });
     toast("ok", `${response.value.dllName} installed for ${game.name}`);
     void loadProxyOptions();
+    setWizard(true);
   };
 
   const runUndo = async () => {
@@ -203,6 +208,7 @@ export function WorkspaceScreen({
           key={`${game.id}:${settingsEpoch}`}
           gameId={game.id}
           onDirtyChange={onDirtyChange}
+          onGuidedSetup={() => setWizard(true)}
         />
       </div>
 
@@ -224,6 +230,14 @@ export function WorkspaceScreen({
             if (dialog === "undo") void runUndo();
             else void runInstall();
           }}
+        />
+      )}
+
+      {wizard && (
+        <SetupWizard
+          game={game}
+          onClose={() => setWizard(false)}
+          onSaved={onSettingsSaved}
         />
       )}
     </div>

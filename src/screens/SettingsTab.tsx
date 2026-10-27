@@ -59,9 +59,11 @@ function FileFlag({ label, present }: { label: string; present: boolean }) {
 export function SettingsTab({
   gameId,
   onDirtyChange,
+  onGuidedSetup,
 }: {
   gameId: string;
   onDirtyChange: (dirty: boolean) => void;
+  onGuidedSetup: () => void;
 }) {
   const toast = useToast();
   const { data, loading, error, reload } = useSettings(gameId);
@@ -173,6 +175,9 @@ export function SettingsTab({
             <FileFlag label="control file" present={form.hasControlFile} />
             <FileFlag label="ini file" present={form.hasIniFile} />
             <span className="text-ink-dim">read from the mod folder</span>
+            <Button size="sm" variant="ghost" className="ml-auto" onClick={onGuidedSetup}>
+              Guided setup
+            </Button>
           </div>
 
           <Section title="Frame generation">

@@ -212,6 +212,7 @@ export default function MainScreen() {
         settingsEpoch={settingsEpoch}
         onGameUpdated={updateGame}
         onDirtyChange={setSettingsDirty}
+        onSettingsSaved={() => setSettingsEpoch((current) => current + 1)}
       />
     );
   } else {

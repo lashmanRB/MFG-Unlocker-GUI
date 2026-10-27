@@ -182,6 +182,11 @@ Settings are written to `RTXMFG-Universal.json` (the mod's authoritative control
 `optiScalerUi`, are preserved. Saves are atomic, with an in-place fallback when the game holds the
 file open.
 
+For a first install there is **Guided setup**: one setting per screen, with what it does, what most
+people want and a one click way to take the recommended values. It opens on its own after installing
+and lives behind the Guided setup button in the Settings tab. The table below is the same set of
+settings, for reference.
+
 ![Settings](docs/settings.png)
 
 | Setting | Values | What it changes |
