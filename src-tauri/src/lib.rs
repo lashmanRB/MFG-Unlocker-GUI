@@ -1,4 +1,5 @@
 mod commands;
+mod appupdate;
 mod compat;
 mod covers;
 mod gamedir;
@@ -31,6 +32,8 @@ pub fn run() {
         .manage(Geometry(Mutex::new(None)))
         .invoke_handler(tauri::generate_handler![
             app_version,
+            commands::app_update_check,
+            commands::app_update_install,
             commands::scan_all,
             commands::rescan_game,
             commands::add_manual_game,
@@ -50,6 +53,9 @@ pub fn run() {
             commands::open_path,
         ])
         .setup(|app| {
+            // An update that has just started this build leaves its predecessor behind.
+            appupdate::cleanup_old();
+
             let data_dir = portable::data_dir().ok();
             let saved = data_dir
                 .as_deref()

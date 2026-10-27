@@ -1,5 +1,6 @@
 use crate::compat;
 use crate::gamedir;
+use crate::appupdate;
 use crate::install;
 use crate::model::{
     normalize_path, ApplyResult, AutoUpdateReport, ExeCandidate, GameEntry, GameSettings,
@@ -14,9 +15,40 @@ use crate::status;
 use crate::steam;
 use crate::store;
 use std::path::{Path, PathBuf};
+use tauri::Manager;
 
 const WORKERS: usize = 6;
 const MAX_EXES: usize = 24;
+
+#[tauri::command]
+pub fn app_update_check() -> Result<appupdate::AppUpdate, String> {
+    appupdate::check()
+}
+
+// Downloads the release, puts it where the running exe sits and asks the window
+// to close: the close path saves the window rectangle, and the waiter that was
+// started here launches the new file once this process is gone.
+#[tauri::command]
+pub fn app_update_install(app: tauri::AppHandle) -> Result<(), String> {
+    let update = appupdate::check()?;
+    if !update.available {
+        return Err("This is already the newest version.".to_string());
+    }
+    let dir = portable::data_dir()?;
+    let exe = std::env::current_exe().map_err(|error| format!("cannot find the running app: {error}"))?;
+    appupdate::prepare(&dir, &update, &exe)?;
+    appupdate::relaunch(&exe)?;
+
+    match app.get_webview_window("main") {
+        Some(window) => {
+            window
+                .close()
+                .map_err(|error| format!("the new version is in place, but the window would not close: {error}"))?
+        }
+        None => std::process::exit(0),
+    }
+    Ok(())
+}
 
 fn game_id_for(install_dir: &Path) -> String {
     format!("game:{}", normalize_path(&install_dir.to_string_lossy()))

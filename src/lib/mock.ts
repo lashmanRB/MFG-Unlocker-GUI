@@ -1,4 +1,5 @@
 import type {
+  AppUpdate,
   ApplyResult,
   AutoUpdateReport,
   CompatReport,
@@ -28,6 +29,7 @@ interface MockFlags {
   autoUpdateFailed: string[];
   autoUpdateDownloaded: boolean;
   proxyOptionsEmpty: boolean;
+  appUpdateFails: boolean;
 }
 
 export const mockFlags: MockFlags = {
@@ -41,6 +43,7 @@ export const mockFlags: MockFlags = {
   autoUpdateFailed: [],
   autoUpdateDownloaded: false,
   proxyOptionsEmpty: false,
+  appUpdateFails: false,
 };
 
 const baseCompat: CompatReport = {
@@ -350,6 +353,22 @@ const release: ReleaseInfo = {
   cachedDllPath: "C:\\Users\\lashm\\AppData\\Roaming\\MFG Unlocker GUI\\release\\v1.6.1\\MFGUnlocker.dll",
 };
 
+const appUpdate: AppUpdate = {
+  available: true,
+  current: "1.0.4",
+  latest: "1.0.5",
+  tag: "v1.0.5",
+  name: "1.0.5",
+  notes:
+    "## What's new\n- Refresh now updates the app itself and restarts it\n- Guided setup explains each DLSS preset instead of showing bare letters\n- The settings form keeps your scroll position",
+  publishedAt: "2026-10-27T12:00:00Z",
+  assetName: "mfg-unlocker-gui.exe",
+  sizeBytes: 8_940_544,
+  downloadUrl:
+    "https://github.com/lashmanRB/MFG-Unlocker-GUI/releases/download/v1.0.5/mfg-unlocker-gui.exe",
+  pageUrl: "https://github.com/lashmanRB/MFG-Unlocker-GUI/releases/tag/v1.0.5",
+};
+
 const fallbackLog = "[RTXMFG] log text is not available\n";
 const logContents = new Map<string, string>();
 
@@ -545,6 +564,17 @@ export const mock = {
       updated,
       failed: [...mockFlags.autoUpdateFailed],
     });
+  },
+
+  appUpdateCheck: (): Promise<AppUpdate> => Promise.resolve({ ...appUpdate }),
+
+  appUpdateInstall: async (): Promise<void> => {
+    await new Promise<void>((resolve) => {
+      window.setTimeout(resolve, 700);
+    });
+    if (mockFlags.appUpdateFails) {
+      throw new Error("the download does not match the published SHA-256, so it was thrown away");
+    }
   },
 
   readSettings: (gameId: string): Promise<GameSettings> => {

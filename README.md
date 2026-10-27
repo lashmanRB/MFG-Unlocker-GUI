@@ -24,8 +24,11 @@ from the mod's releases and checks the published SHA-256 before copying anything
 - Undoes an install completely: removes the DLL, gives the game's own Bink DLL its name back, and
   restores the mod build that was replaced.
 - Checks the mod's releases on startup, downloads a new build, and moves every installed game to it.
-- One **Refresh** button in the top bar pulls everything again in one go: the mod release, NVIDIA's
-  per-title list, cover art and the game list.
+- Updates itself the same way: the app asks GitHub for its own newest release on startup and on
+  **Refresh**, downloads the exe, swaps it in place and restarts. One prompt, no installer, no trip
+  to the releases page.
+- One **Refresh** button in the top bar pulls everything again in one go: the mod release, the app
+  itself, NVIDIA's per-title list, cover art and the game list.
 - Edits all of the mod's settings from outside the game: mode, multiplier, dynamic target, the three
   preset families, V-Sync, the Reflex FPS cap, menu language and key, and the two compatibility
   switches.

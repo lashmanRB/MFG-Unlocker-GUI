@@ -106,6 +106,20 @@ export interface AutoUpdateReport {
   failed: string[];
 }
 
+export interface AppUpdate {
+  available: boolean;
+  current: string;
+  latest: string;
+  tag: string;
+  name: string;
+  notes: string;
+  publishedAt: string;
+  assetName: string;
+  sizeBytes: number;
+  downloadUrl: string;
+  pageUrl: string;
+}
+
 export type MfgMode = "follow" | "fixed" | "dynamic";
 
 export interface GameSettings {

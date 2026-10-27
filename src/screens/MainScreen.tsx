@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { api } from "../lib/api";
 import { attempt } from "../lib/attempt";
-import type { AutoUpdateReport, GameEntry, ReleaseInfo } from "../lib/types";
+import type { AppUpdate, AutoUpdateReport, GameEntry, ReleaseInfo } from "../lib/types";
+import { AppUpdateDialog } from "../components/AppUpdateDialog";
 import { Button } from "../components/Button";
 import { Dialog } from "../components/Dialog";
 import { FooterBar } from "../components/FooterBar";
@@ -42,6 +43,7 @@ export default function MainScreen() {
   const [settingsEpoch, setSettingsEpoch] = useState(0);
   const [pending, setPending] = useState<PendingIntent | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [appUpdate, setAppUpdate] = useState<AppUpdate | null>(null);
   const autoUpdateStarted = useRef(false);
   const autoUpdateBusy = useRef(false);
 
@@ -108,6 +110,12 @@ export default function MainScreen() {
     [applyAutoUpdate],
   );
 
+  // A failed check is not worth a message: the app keeps running either way.
+  const checkAppUpdate = useCallback(async () => {
+    const response = await attempt(() => api.appUpdateCheck());
+    if (response.ok && response.value.available) setAppUpdate(response.value);
+  }, []);
+
   // release check runs once the first scan settles, so updated install entries
   // are merged into a list that already exists
   useEffect(() => {
@@ -115,7 +123,8 @@ export default function MainScreen() {
     if (phase === "loading") return;
     autoUpdateStarted.current = true;
     void runAutoUpdate(true);
-  }, [phase, runAutoUpdate]);
+    void checkAppUpdate();
+  }, [phase, runAutoUpdate, checkAppUpdate]);
 
   useEffect(() => {
     setSelectedId((current) => {
@@ -139,11 +148,12 @@ export default function MainScreen() {
 
   const scanAndCheckReleases = useCallback(async () => {
     setRefreshing(true);
-    // one button, everything: the mod release, NVIDIA's list, cover art, the list
+    // one button, everything: the mod release, the app itself, NVIDIA's list, cover art, the list
     await rescan(true);
     await runAutoUpdate(true);
+    await checkAppUpdate();
     setRefreshing(false);
-  }, [rescan, runAutoUpdate]);
+  }, [rescan, runAutoUpdate, checkAppUpdate]);
 
   const runRescan = () => {
     if (settingsDirty) {
@@ -270,6 +280,9 @@ export default function MainScreen() {
             The changes on the settings form have not been written to the mod's files yet.
           </p>
         </Dialog>
+      )}
+    {appUpdate !== null && (
+        <AppUpdateDialog update={appUpdate} onLater={() => setAppUpdate(null)} />
       )}
     </div>
   );
