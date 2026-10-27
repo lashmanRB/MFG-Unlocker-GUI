@@ -190,6 +190,8 @@ people want and a one click way to take the recommended values. It opens on its 
 and lives behind the Guided setup button in the Settings tab. The table below is the same set of
 settings, for reference.
 
+![Guided setup](docs/guided-setup.png)
+
 ![Settings](docs/settings.png)
 
 | Setting | Values | What it changes |
@@ -262,7 +264,11 @@ Next to this app's own executable:
 | `data\backups\` | mod builds kept aside so an update or reinstall can be undone |
 | `data\nvidia-overrides.json` | NVIDIA's per-title list, refreshed weekly |
 | `data\steam-covers.json` | cover art URLs resolved from Steam's store API, refreshed monthly |
+| `data\update\` | a downloaded app update, staged there before it is swapped in |
 | `data\webview\` | the WebView2 profile, which also holds the UI zoom level |
+
+While an update replaces the app, the previous build briefly sits beside it as
+`mfg-unlocker-gui.exe.old`. The new build deletes it on its first start.
 
 ## Portable
 
