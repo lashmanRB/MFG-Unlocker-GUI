@@ -283,7 +283,10 @@ export function SettingsTab({
             aside={<span className="text-[10.5px] text-ink-dim">DX12 only</span>}
           >
             <div className={fieldGrid}>
-              <Field label="Super Resolution">
+              <Field
+                label="Super Resolution"
+                hint="K has the best image quality, J is the same model with a little less ghosting and more flicker, L and M are the newer models meant for Ultra Performance and Performance."
+              >
                 <RadioGroup
                   value={form.dlssSrPreset}
                   options={dlssSrPresetChoices}
@@ -291,7 +294,10 @@ export function SettingsTab({
                   label="Super Resolution preset"
                 />
               </Field>
-              <Field label="Ray Reconstruction">
+              <Field
+                label="Ray Reconstruction"
+                hint="D is the first transformer model, E the newer one that games with a depth of field guide need, F is the second generation model and needs driver 580 or newer."
+              >
                 <RadioGroup
                   value={form.dlssRrPreset}
                   options={dlssRrPresetChoices}

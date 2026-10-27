@@ -197,8 +197,8 @@ settings, for reference.
 | DLSS-G preset | Game / driver, A, B, C | C needs DLSS-G 310.9.16 or newer; applies live in DirectX 12 games, a Vulkan game needs a restart |
 | V-Sync | Game / driver, Off, On | Off presents the game's frames without V-Sync; NVIDIA Control Panel settings still win |
 | Reflex FPS limit | 0 to 1000 | 0 leaves the game's own limiter alone; unavailable while Dynamic is selected |
-| Super Resolution preset | Game / driver, J, K, L, M | Switches live in DirectX 12 games without OptiScaler |
-| Ray Reconstruction preset | Game / driver, D, E, F | F needs NVIDIA driver 580 or newer |
+| Super Resolution preset | Game / driver, J, K, L, M | Switches live in DirectX 12 games without OptiScaler. K is the transformer model with the best image quality, J is the same model with a little less ghosting and more flicker, L and M are the newer presets meant for Ultra Performance and Performance |
+| Ray Reconstruction preset | Game / driver, D, E, F | D is the first transformer model, E the newer one that games with a depth of field guide need, F is the second generation model (RR2) and needs NVIDIA driver 580 or newer |
 | Language | Auto, English, Chinese, Ukrainian, Italian, Swedish, Turkish, Vietnamese | Menu language only, diagnostics stay in English |
 | Menu key | any single key | Stored as a Windows virtual key code; empty keeps the mod's default, Backspace |
 | Pinned FPS | on, off | Small real and generated FPS readout in the corner while the menu is closed |

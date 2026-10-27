@@ -202,6 +202,29 @@ const vsyncOptions = [
   { value: 2, label: "On", desc: "Forces V-Sync on, overriding the game." },
 ] as const;
 
+const srOptions = [
+  { value: 0, label: "Game / driver", desc: "Whatever the game or the NVIDIA app already picked." },
+  {
+    value: 10,
+    label: "J",
+    desc: "Transformer model with a little less ghosting and a little more flicker than K.",
+  },
+  { value: 11, label: "K", desc: "Transformer model with the best image quality. The usual pick." },
+  { value: 12, label: "L", desc: "Newer transformer preset, meant for the Ultra Performance mode." },
+  { value: 13, label: "M", desc: "Newer transformer preset, meant for the Performance mode." },
+] as const;
+
+const rrOptions = [
+  { value: 0, label: "Game / driver", desc: "Whatever the game or the NVIDIA app already picked." },
+  { value: 4, label: "D", desc: "The first transformer model. Most games use this today." },
+  {
+    value: 5,
+    label: "E",
+    desc: "The newer transformer model. Games with a depth of field guide need it.",
+  },
+  { value: 6, label: "F", desc: "Second generation model, RR2. Needs NVIDIA driver 580 or newer." },
+] as const;
+
 function labelOf<T extends string | number>(choices: Choice<T>[], value: T): string {
   return choices.find((choice) => choice.value === value)?.label ?? String(value);
 }
@@ -329,6 +352,49 @@ function SettingRow({
       </div>
       <div className="w-[220px] shrink-0">{children}</div>
     </div>
+  );
+}
+
+function PresetRow({
+  selected,
+  recommended,
+  label,
+  desc,
+  onSelect,
+}: {
+  selected: boolean;
+  recommended: boolean;
+  label: string;
+  desc: string;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      onClick={onSelect}
+      className={cn(
+        "flex w-full items-baseline gap-3 px-3 py-2 text-left transition-colors duration-150 ease-out",
+        selected ? "bg-accent/[0.07]" : "hover:bg-hover/50",
+      )}
+    >
+      <span
+        className={cn(
+          "mono w-[84px] shrink-0 text-[10px] tracking-[0.03em]",
+          selected ? "text-accent" : "text-ink-dim",
+        )}
+      >
+        {label}
+      </span>
+      <span className="flex-1 text-[11.5px] leading-snug text-ink-muted">{desc}</span>
+      {recommended && (
+        <span className="mono shrink-0 rounded-[3px] border border-line px-1 text-[8px] tracking-[0.05em] text-ink-dim uppercase">
+          rec
+        </span>
+      )}
+      {selected && <Check size={11} className="shrink-0 self-center text-accent" />}
+    </button>
   );
 }
 
@@ -601,16 +667,15 @@ export function SetupWizard({ game, onClose, onSaved }: SetupWizardProps) {
                   <div
                     role="radiogroup"
                     aria-label="Super Resolution preset"
-                    className="mt-1.5 grid grid-cols-5 gap-2"
+                    className="mt-1.5 divide-y divide-line/40 overflow-hidden rounded-[5px] border border-line bg-raised"
                   >
-                    {dlssSrPresetChoices.map((choice) => (
-                      <ChoiceCard
+                    {srOptions.map((choice) => (
+                      <PresetRow
                         key={choice.value}
                         selected={draft.dlssSrPreset === choice.value}
                         recommended={choice.value === 0}
-                        title={choice.label}
-                        desc={choice.value === 0 ? "the game's own model" : "transformer model"}
-                        compact
+                        label={choice.label}
+                        desc={choice.desc}
                         onSelect={() => update("dlssSrPreset", choice.value)}
                       />
                     ))}
@@ -621,22 +686,24 @@ export function SetupWizard({ game, onClose, onSaved }: SetupWizardProps) {
                   <div
                     role="radiogroup"
                     aria-label="Ray Reconstruction preset"
-                    className="mt-1.5 grid grid-cols-3 gap-2"
+                    className="mt-1.5 divide-y divide-line/40 overflow-hidden rounded-[5px] border border-line bg-raised"
                   >
-                    {dlssRrPresetChoices.map((choice) => (
-                      <ChoiceCard
+                    {rrOptions.map((choice) => (
+                      <PresetRow
                         key={choice.value}
                         selected={draft.dlssRrPreset === choice.value}
                         recommended={choice.value === 0}
-                        title={choice.label}
-                        desc={choice.value === 6 ? "needs NVIDIA driver 580 or newer" : "the game's own model"}
-                        compact
+                        label={choice.label}
+                        desc={choice.desc}
                         onSelect={() => update("dlssRrPreset", choice.value)}
                       />
                     ))}
                   </div>
                 </div>
-                <p className="text-[10.5px] text-ink-muted">Both apply live, in DirectX 12 games only.</p>
+                <p className="text-[10.5px] text-ink-muted">
+                  Both apply live, in DirectX 12 games only. A preset picked here also overrides the
+                  NVIDIA app for that session.
+                </p>
               </div>
             )}
 
