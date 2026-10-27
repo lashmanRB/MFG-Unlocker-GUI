@@ -1,15 +1,18 @@
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { X } from "lucide-react";
+import { cn } from "../lib/cn";
 
 interface DialogProps {
   title: string;
   children: ReactNode;
   actions: ReactNode;
   onClose: () => void;
+  size?: "sm" | "lg";
+  flush?: boolean;
 }
 
-export function Dialog({ title, children, actions, onClose }: DialogProps) {
+export function Dialog({ title, children, actions, onClose, size = "sm", flush = false }: DialogProps) {
   const panelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -52,7 +55,10 @@ export function Dialog({ title, children, actions, onClose }: DialogProps) {
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="relative flex w-full max-w-[470px] flex-col rounded-md border border-line-strong bg-elevated outline-none"
+        className={cn(
+          "relative flex max-h-[calc(100vh-48px)] w-full flex-col rounded-md border border-line-strong bg-elevated outline-none",
+          size === "lg" ? "max-w-[920px]" : "max-w-[470px]",
+        )}
       >
         <header className="flex h-10 shrink-0 items-center justify-between gap-3 border-b border-line px-3.5">
           <h2 className="text-[13px] font-semibold tracking-[-0.01em] text-ink">{title}</h2>
@@ -65,7 +71,12 @@ export function Dialog({ title, children, actions, onClose }: DialogProps) {
             <X size={13} />
           </button>
         </header>
-        <div className="min-h-0 flex-1 overflow-y-auto px-3.5 py-3 text-[12px] leading-relaxed text-ink-muted">
+        <div
+          className={cn(
+            "min-h-0 flex-1 overflow-y-auto text-[12px] leading-relaxed text-ink-muted",
+            !flush && "px-3.5 py-3",
+          )}
+        >
           {children}
         </div>
         <footer className="flex shrink-0 justify-end gap-2 border-t border-line px-3.5 py-2.5">

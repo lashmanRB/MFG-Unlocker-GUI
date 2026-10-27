@@ -94,6 +94,10 @@
   .toast-in {
     animation: toast-in 160ms var(--ease-out);
   }
+
+  .step-in {
+    animation: step-in 180ms var(--ease-out);
+  }
 }
 
 @keyframes toast-in {
@@ -104,5 +108,23 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateX(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-in,
+  .toast-in {
+    animation: none;
   }
 }
