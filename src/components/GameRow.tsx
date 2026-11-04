@@ -7,18 +7,30 @@ import type { GameEntry } from "../lib/types";
 interface GameRowProps {
   game: GameEntry;
   selected: boolean;
-  onSelect: (id: string) => void;
+  checked: boolean;
+  onSelect: (id: string, modifiers: { toggle: boolean; range: boolean }) => void;
+  onContextMenu: (id: string, point: { x: number; y: number }) => void;
 }
 
-export function GameRow({ game, selected, onSelect }: GameRowProps) {
+export function GameRow({ game, selected, checked, onSelect, onContextMenu }: GameRowProps) {
   return (
     <button
       type="button"
-      onClick={() => onSelect(game.id)}
+      onClick={(event) =>
+        onSelect(game.id, {
+          toggle: event.ctrlKey || event.metaKey,
+          range: event.shiftKey,
+        })
+      }
+      onContextMenu={(event) => {
+        event.preventDefault();
+        onContextMenu(game.id, { x: event.clientX, y: event.clientY });
+      }}
       aria-current={selected ? "true" : undefined}
+      data-checked={checked || undefined}
       className={cn(
         "group relative flex w-full items-center gap-2.5 py-2 pr-2.5 pl-3 text-left transition-colors duration-150 ease-out",
-        selected ? "bg-elevated" : "hover:bg-elevated/60",
+        selected || checked ? "bg-elevated" : "hover:bg-elevated/60",
       )}
     >
       {selected && (

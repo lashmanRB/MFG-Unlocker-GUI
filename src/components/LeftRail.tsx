@@ -1,6 +1,8 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
+import { Button } from "./Button";
 import { Callout } from "./Callout";
+import { ContextMenu } from "./ContextMenu";
 import { GameRow } from "./GameRow";
 import { RailSkeleton } from "./Skeletons";
 import { cn } from "../lib/cn";
@@ -17,10 +19,17 @@ interface FilterOption {
 interface LeftRailProps {
   games: GameEntry[];
   selectedId: string | null;
+  selectedIds: string[];
   loading: boolean;
   steamMissing: boolean;
   scanErrors: string[];
   onSelect: (id: string) => void;
+  onToggleSelect: (id: string) => void;
+  onRangeSelect: (ids: string[]) => void;
+  onContextSelect: (id: string) => void;
+  onClearSelection: () => void;
+  onBulkInstall: (ids: string[]) => void;
+  onBulkUninstall: (ids: string[]) => void;
   onAddFolder: () => void;
 }
 
@@ -40,14 +49,22 @@ function matchesFilter(game: GameEntry, filter: Filter): boolean {
 export function LeftRail({
   games,
   selectedId,
+  selectedIds,
   loading,
   steamMissing,
   scanErrors,
   onSelect,
+  onToggleSelect,
+  onRangeSelect,
+  onContextSelect,
+  onClearSelection,
+  onBulkInstall,
+  onBulkUninstall,
   onAddFolder,
 }: LeftRailProps) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const scrollMemory = useRef(0);
 
@@ -84,6 +101,39 @@ export function LeftRail({
       );
     });
   }, [games, filter, query]);
+
+  const selectedGames = useMemo(
+    () => games.filter((game) => selectedIds.includes(game.id)),
+    [games, selectedIds],
+  );
+  const installTargets = selectedGames.filter((game) => game.install === null);
+  const uninstallTargets = selectedGames.filter((game) => game.install !== null);
+
+  function handleSelect(id: string, modifiers: { toggle: boolean; range: boolean }) {
+    if (modifiers.toggle) {
+      onToggleSelect(id);
+      return;
+    }
+    if (modifiers.range) {
+      const from = selectedId ?? id;
+      const anchor = visible.findIndex((game) => game.id === from);
+      const target = visible.findIndex((game) => game.id === id);
+      if (anchor === -1 || target === -1) {
+        onSelect(id);
+        return;
+      }
+      const first = Math.min(anchor, target);
+      const last = Math.max(anchor, target);
+      onRangeSelect(visible.slice(first, last + 1).map((game) => game.id));
+      return;
+    }
+    onSelect(id);
+  }
+
+  const menuIds = menu === null ? [] : selectedIds.includes(menu.id) ? selectedIds : [menu.id];
+  const menuGames = games.filter((game) => menuIds.includes(game.id));
+  const menuInstalls = menuGames.filter((game) => game.install === null).map((game) => game.id);
+  const menuUninstalls = menuGames.filter((game) => game.install !== null).map((game) => game.id);
 
   return (
     <aside className="flex w-[312px] shrink-0 flex-col border-r border-line bg-raised max-[920px]:w-[248px]">
@@ -145,6 +195,43 @@ export function LeftRail({
           })}
         </div>
       </div>
+
+      {selectedIds.length > 1 && (
+        <div className="flex shrink-0 items-center gap-1 border-b border-line bg-elevated/60 px-2.5 py-1.5">
+          <span className="mono text-[10.5px] whitespace-nowrap text-ink-muted">
+            {selectedIds.length} selected
+          </span>
+          <div className="ml-auto flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={installTargets.length === 0}
+              title={installTargets.length === 0 ? "Every selected game has the mod" : undefined}
+              onClick={() => onBulkInstall(installTargets.map((game) => game.id))}
+            >
+              Install
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={uninstallTargets.length === 0}
+              title={uninstallTargets.length === 0 ? "No selected game has the mod" : undefined}
+              onClick={() => onBulkUninstall(uninstallTargets.map((game) => game.id))}
+            >
+              Uninstall
+            </Button>
+            <button
+              type="button"
+              aria-label="Clear selection"
+              title="Clear selection"
+              onClick={onClearSelection}
+              className="rounded-[3px] p-1 text-ink-dim transition-colors duration-150 ease-out hover:bg-hover hover:text-ink"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        </div>
+      )}
 
       <div
         ref={listRef}
@@ -210,12 +297,50 @@ export function LeftRail({
           <ul className="divide-y divide-line/60">
             {visible.map((game) => (
               <li key={game.id}>
-                <GameRow game={game} selected={game.id === selectedId} onSelect={onSelect} />
+                <GameRow
+                  game={game}
+                  selected={game.id === selectedId}
+                  checked={selectedIds.includes(game.id)}
+                  onSelect={handleSelect}
+                  onContextMenu={(id, point) => {
+                    onContextSelect(id);
+                    setMenu({ id, ...point });
+                  }}
+                />
               </li>
             ))}
           </ul>
         )}
       </div>
+
+      {menu !== null && (
+        <ContextMenu
+          x={menu.x}
+          y={menu.y}
+          title={menuGames.length === 1 ? menuGames[0].name : `${menuGames.length} games`}
+          onClose={() => setMenu(null)}
+          items={[
+            {
+              label: "Install mod",
+              hint: menuInstalls.length > 0 ? `+${menuInstalls.length}` : undefined,
+              disabled: menuInstalls.length === 0,
+              onSelect: () => onBulkInstall(menuInstalls),
+            },
+            {
+              label: "Uninstall mod",
+              hint: menuUninstalls.length > 0 ? `-${menuUninstalls.length}` : undefined,
+              danger: true,
+              disabled: menuUninstalls.length === 0,
+              onSelect: () => onBulkUninstall(menuUninstalls),
+            },
+            {
+              label: "Clear selection",
+              disabled: selectedIds.length === 0,
+              onSelect: onClearSelection,
+            },
+          ]}
+        />
+      )}
     </aside>
   );
 }

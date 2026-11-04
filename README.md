@@ -62,6 +62,17 @@ are all reversible, and it only writes files it can name.
 
 ## The game list
 
+### Many games at once
+
+Ctrl click adds a game to the selection, shift click takes the range from the game on screen, and a
+right click on the list opens the menu for whatever is selected: **Install mod**, **Uninstall mod**,
+**Clear selection**. The same two actions sit above the list once more than one game is picked.
+
+The bulk install walks each game's folder for a free proxy name, shows the one it picked per row, and
+installs them one after another with a status per game, so a folder that is locked or missing a free
+name fails on its own row instead of stopping the rest. Bulk uninstall works the same way, and an
+undo that finds a build kept aside puts that build back rather than leaving the game without one.
+
 ### How Steam is found
 
 No paths are hardcoded. The app tries, in order:

@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { api } from "../lib/api";
 import { attempt } from "../lib/attempt";
-import type { AppUpdate, AutoUpdateReport, GameEntry, ReleaseInfo } from "../lib/types";
+import type { AppUpdate, AutoUpdateReport, GameEntry, InstallInfo, ReleaseInfo } from "../lib/types";
 import { AppUpdateDialog } from "../components/AppUpdateDialog";
+import { BulkInstallDialog } from "../components/BulkInstallDialog";
+import { BulkUninstallDialog } from "../components/BulkUninstallDialog";
 import { Button } from "../components/Button";
 import { Dialog } from "../components/Dialog";
 import { FooterBar } from "../components/FooterBar";
@@ -37,6 +39,8 @@ export default function MainScreen() {
   const toast = useToast();
   const zoom = useZoom();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulk, setBulk] = useState<{ kind: "install" | "uninstall"; ids: string[] } | null>(null);
   const [release, setRelease] = useState<ReleaseInfo | null>(null);
   const [releaseFailed, setReleaseFailed] = useState(false);
   const [settingsDirty, setSettingsDirty] = useState(false);
@@ -164,12 +168,59 @@ export default function MainScreen() {
   };
 
   const selectGame = (id: string) => {
-    if (id === selectedId) return;
+    if (id === selectedId) {
+      setSelectedIds([id]);
+      return;
+    }
     if (settingsDirty) {
       setPending({ kind: "select", id });
       return;
     }
     setSelectedId(id);
+    setSelectedIds([id]);
+  };
+
+  // ctrl and shift only grow the selection, the game on screen stays put until
+  // a plain click picks a new one
+  const toggleSelect = (id: string) => {
+    setSelectedIds((current) =>
+      current.includes(id) ? current.filter((entry) => entry !== id) : [...current, id],
+    );
+  };
+
+  const contextSelect = (id: string) => {
+    setSelectedIds((current) => (current.includes(id) ? current : [id]));
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(selectedId === null ? [] : [selectedId]);
+  };
+
+  const bulkGames =
+    bulk === null ? [] : games.filter((game) => bulk.ids.includes(game.id));
+
+  const bulkInstall = (ids: string[]) => {
+    if (ids.length > 0) setBulk({ kind: "install", ids });
+  };
+
+  const bulkUninstall = (ids: string[]) => {
+    if (ids.length > 0) setBulk({ kind: "uninstall", ids });
+  };
+
+  const handleBulkInstalled = (installed: { gameId: string; install: InstallInfo }[]) => {
+    for (const item of installed) {
+      const game = games.find((candidate) => candidate.id === item.gameId);
+      if (game !== undefined) updateGame({ ...game, install: item.install });
+    }
+  };
+
+  const handleBulkRemoved = async (removedIds: string[]) => {
+    const refreshed = await Promise.all(
+      removedIds.map((id) => attempt(() => api.rescanGame(id))),
+    );
+    for (const response of refreshed) {
+      if (response.ok) updateGame(response.value);
+    }
   };
 
   const discardAndContinue = () => {
@@ -179,6 +230,7 @@ export default function MainScreen() {
     if (intent === null) return;
     if (intent.kind === "select") {
       setSelectedId(intent.id);
+      setSelectedIds([intent.id]);
     } else if (intent.kind === "add") {
       void runAdd();
     } else {
@@ -248,10 +300,17 @@ export default function MainScreen() {
         <LeftRail
           games={games}
           selectedId={selectedId}
+          selectedIds={selectedIds}
           loading={loading}
           steamMissing={result !== null && result.scan.steamPath === null}
           scanErrors={result?.scan.errors ?? []}
           onSelect={selectGame}
+          onToggleSelect={toggleSelect}
+          onRangeSelect={setSelectedIds}
+          onContextSelect={contextSelect}
+          onClearSelection={clearSelection}
+          onBulkInstall={bulkInstall}
+          onBulkUninstall={bulkUninstall}
           onAddFolder={addFolder}
         />
         <div className="flex min-w-0 flex-1 flex-col">
@@ -281,7 +340,24 @@ export default function MainScreen() {
           </p>
         </Dialog>
       )}
-    {appUpdate !== null && (
+
+      {bulk?.kind === "install" && (
+        <BulkInstallDialog
+          games={bulkGames}
+          onClose={() => setBulk(null)}
+          onFinished={handleBulkInstalled}
+        />
+      )}
+
+      {bulk?.kind === "uninstall" && (
+        <BulkUninstallDialog
+          games={bulkGames}
+          onClose={() => setBulk(null)}
+          onFinished={(ids) => void handleBulkRemoved(ids)}
+        />
+      )}
+
+      {appUpdate !== null && (
         <AppUpdateDialog update={appUpdate} onLater={() => setAppUpdate(null)} />
       )}
     </div>

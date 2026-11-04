@@ -8,7 +8,7 @@ interface DialogProps {
   children: ReactNode;
   actions: ReactNode;
   onClose: () => void;
-  size?: "sm" | "lg";
+  size?: "sm" | "md" | "lg";
   flush?: boolean;
 }
 
@@ -57,7 +57,7 @@ export function Dialog({ title, children, actions, onClose, size = "sm", flush =
         tabIndex={-1}
         className={cn(
           "relative flex max-h-[calc(100vh-48px)] w-full flex-col rounded-md border border-line-strong bg-elevated outline-none",
-          size === "lg" ? "max-w-[920px]" : "max-w-[470px]",
+          size === "lg" ? "max-w-[920px]" : size === "md" ? "max-w-[620px]" : "max-w-[470px]",
         )}
       >
         <header className="flex h-10 shrink-0 items-center justify-between gap-3 border-b border-line px-3.5">
