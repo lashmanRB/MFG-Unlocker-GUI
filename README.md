@@ -73,6 +73,8 @@ installs them one after another with a status per game, so a folder that is lock
 name fails on its own row instead of stopping the rest. Bulk uninstall works the same way, and an
 undo that finds a build kept aside puts that build back rather than leaving the game without one.
 
+![Bulk actions](docs/bulk.png)
+
 ### How Steam is found
 
 No paths are hardcoded. The app tries, in order:
