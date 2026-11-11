@@ -1,0 +1,942 @@
+{
+  "updated": "2026-11-11",
+  "issuesUrl": "https://github.com/dashdogy/MFG-Unlocker/issues?q=is%3Aissue+label%3Acompatibility",
+  "games": {
+    "3768760": {
+      "name": "007 First Light",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Listed upstream for the OptiScaler plugin route rather than a proxy DLL; tester reports got the menu or frame generation working that way.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "3393110": {
+      "name": "AION 2",
+      "verdict": "mixed",
+      "notes": [
+        {
+          "text": "Installed as d3d12.dll (dxgi.dll also loads) it unlocks the in-game MFG settings, but the mod menu cannot be clicked because the game uses a software cursor and game input takes priority.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/78"
+        },
+        {
+          "text": "On v1.7.0 with dxgi.dll, selecting 3x freezes the 3D picture while menus keep drawing and the game still responds to input; alt-tabbing brings the picture back.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/149"
+        }
+      ]
+    },
+    "2288340": {
+      "name": "Ace Combat 8",
+      "verdict": "mixed",
+      "notes": [
+        {
+          "text": "The game has no official FG support; adding r.Streamline.InitializePlugin=1, r.Streamline.DLSSG.Enable=1 and t.Streamline.Reflex.Mode=1 under [ConsoleVariables] in Engine.ini enables native 2x FG, but MFG did not apply with the mod (v1.4.1, RTX 4080).",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/66"
+        },
+        {
+          "text": "The upstream compatibility table nonetheless lists version.dll as the recommended proxy name based on working reports.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "4732690": {
+      "name": "Arknights: Endfield",
+      "verdict": "mixed",
+      "notes": [
+        {
+          "text": "On Vulkan (RTX 3050 laptop, v1.6.1) the Backspace menu never appeared; the developer said it was fixed in v1.7.0 but the reporter still could not open the menu after a clean update.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/116#issuecomment-6394077886"
+        },
+        {
+          "text": "The doc lists Endfield under the OptiScaler route and says it needs the project's own OptiScaler build.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "3751950": {
+      "name": "Assassin's Creed IV Black Flag Resynced",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "The doc lists version.dll as the recommended proxy, with dinput8.dll also loading.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        },
+        {
+          "text": "Mild foliage interpolation artifacts with mod-driven FG were reported in the cross-game artifact thread.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/43#issuecomment-5700793789"
+        }
+      ]
+    },
+    "3159330": {
+      "name": "Assassin's Creed Shadows",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Everything above 2x was locked with a wrapper-not-valid error on v1.2 to v1.3.3; replacing the DLLs in the game's NVStreamline\\production folder with Streamline SDK 2.14.1 files (DLSS 310.9.1) unlocked higher multipliers.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/39#issuecomment-5800519289"
+        },
+        {
+          "text": "The developer marked the issue fixed in mod v1.6.1.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/39#issuecomment-6283085034"
+        },
+        {
+          "text": "One user reported v1.3.3 deleting DLSS files from the NVStreamline folder and even a backup folder on every game exit; another user saw no deletions, so this remains unconfirmed.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/39#issuecomment-5673674048"
+        }
+      ]
+    },
+    "2807960": {
+      "name": "Battlefield 6",
+      "verdict": "broken",
+      "notes": [
+        {
+          "text": "Listed upstream among games with anti-cheat (Battlefield 6 / RedSec) where MFG Unlocker is not supported; do not install it there.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "2358720": {
+      "name": "Black Myth: Wukong",
+      "verdict": "mixed",
+      "notes": [
+        {
+          "text": "The doc lists version.dll as the recommended proxy, with dsound.dll and dxgi.dll also reported loading.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        },
+        {
+          "text": "With the Ultimate ASI Loader route one tester got a black screen unless the game lost focus; switching to the RenoDX addon fork (mavismmg/MFGAdaUnlock-RenoDx) made it work.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5573875989"
+        },
+        {
+          "text": "On RTX 3080 with v1.7.0, DLSS FG startup fails with errors 170/174 (wrapper allocation layout unrecognized) and FG stays off; both version.dll and dxgi.dll were affected.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/140"
+        }
+      ]
+    },
+    "1285190": {
+      "name": "Borderlands 4",
+      "verdict": "broken",
+      "notes": [
+        {
+          "text": "3x and 4x FG freeze the picture while 2x stays normal (v1.3.3, RTX 4070, driver 616.92).",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/38"
+        }
+      ]
+    },
+    "4435490": {
+      "name": "Call of Duty: Modern Warfare 4",
+      "verdict": "mixed",
+      "notes": [
+        {
+          "text": "version.dll in the sp26 folder beside SP26-cod.exe did not bring up the mod menu (v1.7, RTX 4060).",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/157"
+        },
+        {
+          "text": "With dxgi.dll, Multi Frame Generation itself works but the Backspace menu will not open (v1.7, RTX 4090).",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/129"
+        },
+        {
+          "text": "The doc lists dxgi.dll as the recommended proxy name for this game.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "1903340": {
+      "name": "Clair Obscur: Expedition 33",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Listed upstream for the OptiScaler plugin route rather than a proxy DLL; tester reports got the menu or frame generation working that way.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "870780": {
+      "name": "Control",
+      "verdict": "unknown",
+      "notes": [
+        {
+          "text": "No menu appeared with any proxy name tried (version.dll, d3d12.dll, dxgi.dll) on game 1.3.1 with mod 1.3.3 Hotfix 2; the log shows NVIDIA profile tier 0, i.e. no MFG override listed for this game.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/58"
+        }
+      ]
+    },
+    "3669870": {
+      "name": "Control Resonant",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Game patch 1.4.0 broke MFG above 2x (frozen picture, 'Waiting for an active DLSS-G pipeline'); updating DLSS, Ray Reconstruction and Frame Generation DLLs to 310.9.1 via DLSS Swapper or NVIDIA override restored it.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/64#issuecomment-5947591642"
+        },
+        {
+          "text": "The developer fixed the patch breakage in mod v1.6.1.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/64#issuecomment-6283099728"
+        },
+        {
+          "text": "A later recurrence was traced to an RHI install; removing all leftover files and installing v1.5.0 Hotfix 1 manually as version.dll worked.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/64#issuecomment-6214886648"
+        },
+        {
+          "text": "An alternative proxy route is bink2w64.dll: rename the game's original bink2w64.dll to bink2w64hooked.dll and give the mod the bink2w64.dll name; this worked for some players but not all.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/64#issuecomment-5933480040"
+        }
+      ]
+    },
+    "3321460": {
+      "name": "Crimson Desert",
+      "verdict": "mixed",
+      "notes": [
+        {
+          "text": "The doc lists d3d12.dll as the proxy; version.dll and dinput8.dll are not loaded, and winmm.dll is taken by the game's own mod loader.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        },
+        {
+          "text": "Vegetation artifacts with mod-driven MFG are reported by multiple players; one calls DLSS Enabler (FSR FG) the only clean MFG option for now, another found RTX Encore visibly better.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/43#issuecomment-6325143327"
+        }
+      ]
+    },
+    "386180": {
+      "name": "Crossout",
+      "verdict": "unknown",
+      "notes": [
+        {
+          "text": "With version.dll in the game folder nothing changes and FG cannot be pushed past native 2x (v1.7, RTX 4070 Ti, Crossout Remastered); no logs were provided.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/132"
+        }
+      ]
+    },
+    "1091500": {
+      "name": "Cyberpunk 2077",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "With Cyber Engine Tweaks (version.dll) and RED4ext (winmm.dll) installed those proxy names are taken, and dinput8.dll does not load the mod; dxgi.dll worked on a GOG copy.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5954661563"
+        },
+        {
+          "text": "The doc lists xinput9_1_0.dll as the recommended proxy, with dxgi.dll and d3d12.dll also reported loading.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        },
+        {
+          "text": "Global V-Sync enabled in the NVIDIA App capped output at about 138 FPS; disabling it let 6x MFG reach about 209 FPS on an RTX 4090.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5954661563"
+        },
+        {
+          "text": "v1.3.2 crashed the game when taking a screenshot, switching input method or alt-tabbing with 4x FG active.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/25"
+        }
+      ]
+    },
+    "3017860": {
+      "name": "DOOM: The Dark Ages",
+      "verdict": "mixed",
+      "notes": [
+        {
+          "text": "Runs on Vulkan with winmm.dll alongside ReShade/RenoDX and KaibzMod (version.dll); MFG worked about two thirds of the time and seemed to disable itself, needing a video-settings reapply or looking down for a few seconds to recover.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5628322967"
+        },
+        {
+          "text": "The same report notes traversal stutter not present with native 2x FG, tested in both borderless and exclusive fullscreen with Present From Compute on.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5628322967"
+        },
+        {
+          "text": "A separate low-detail report got black screens on v1.3.3 with no logs.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/40"
+        },
+        {
+          "text": "Also listed as running through OptiScaler, which needs the project's own OptiScaler build for this game.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "2054970": {
+      "name": "Dragon's Dogma 2",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "The game crashes if MFG Unlocker is installed alone; install REFramework as dinput8.dll first and the mod as winmm.dll, which the reporter confirmed working.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/118#issuecomment-6357648861"
+        },
+        {
+          "text": "After enabling hardware-accelerated GPU scheduling a reboot was needed before DLSS FG stopped being greyed out in the settings.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/118#issuecomment-6667201484"
+        },
+        {
+          "text": "With the Dark Arisen expansion and a newer driver the game offers up to 6x, but the mod menu only allows Follow game or 2x manually; Follow game still applies 6x.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/94"
+        }
+      ]
+    },
+    "534380": {
+      "name": "Dying Light 2",
+      "verdict": "works",
+      "notes": [
+        {
+          "text": "The doc lists winmm.dll as the recommended proxy (version.dll also loads), and the game has also run the mod as an OptiScaler plugin.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "3008130": {
+      "name": "Dying Light: The Beast",
+      "verdict": "works",
+      "notes": [
+        {
+          "text": "The doc lists winmm.dll as the recommended proxy name based on working reports.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "1203620": {
+      "name": "Enshrouded",
+      "verdict": "works",
+      "notes": [
+        {
+          "text": "The doc lists winmm.dll for this Vulkan game; Dynamic MFG is unavailable on the Vulkan path. Also listed under the OptiScaler route.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "2300320": {
+      "name": "Farming Simulator 25",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "With dinput8.dll in the x64 folder and DLSS-G Preset B, 2x to 4x MFG worked (about 39 real FPS to 153 output FPS at 4x on an RTX 4070).",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/92"
+        },
+        {
+          "text": "Switching to Preset C caused severe dark blue/black geometric corruption that persisted across restarts and config resets until the proxy DLL was removed; avoid Preset C here.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/92"
+        },
+        {
+          "text": "The doc lists dinput8.dll as the recommended proxy, with version.dll also loading.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "2515020": {
+      "name": "Final Fantasy XVI",
+      "verdict": "broken",
+      "notes": [
+        {
+          "text": "version.dll and dxgi.dll both load the menu and un-grey the FG option, but nothing applies and the mod stays waiting or not ready (v1.7.0, game 1.03).",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/154"
+        }
+      ]
+    },
+    "2909400": {
+      "name": "Final Fantasy VII Rebirth",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "The doc lists version.dll as the recommended proxy (dxgi.dll also loads); avoid dsound.dll if FF7RebirthFix already uses it.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        },
+        {
+          "text": "A v1.2 report selected higher multipliers but always got native 2x output (NVIDIA max 4x).",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/17"
+        }
+      ]
+    },
+    "2483190": {
+      "name": "Forza Horizon 6",
+      "verdict": "broken",
+      "notes": [
+        {
+          "text": "Crashes at launch on both the Steam build (v1.3.3; one user says v1.3.2 worked) and the Microsoft Store build (v1.4).",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/62"
+        },
+        {
+          "text": "Listed upstream among anti-cheat games where MFG Unlocker is not supported.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "2440510": {
+      "name": "Forza Motorsport",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Listed upstream for the OptiScaler plugin route rather than a proxy DLL; tester reports got the menu or frame generation working that way.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "3010850": {
+      "name": "Gears of War: E-Day",
+      "verdict": "broken",
+      "notes": [
+        {
+          "text": "Refuses to launch with DLL-related errors across mod versions 1.2 to 1.4; as d3d12.dll it gets further but then claims the PC does not support DirectX 12.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/74"
+        },
+        {
+          "text": "Listed upstream among anti-cheat games where MFG Unlocker is not supported.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "1297900": {
+      "name": "Gothic 1 Remake",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "The game has two executables: version.dll in the root folder loads but does nothing; put it in Binaries\\Win64 next to the shipping exe and the mod works.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/159#issuecomment-6747794316"
+        },
+        {
+          "text": "Earlier mod versions had problems: v1.3.2 crashed at launch and v1.3.3 went black above 2x while the game kept running.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/35"
+        },
+        {
+          "text": "The doc lists version.dll as the recommended proxy, with winmm.dll also loading.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "3240220": {
+      "name": "Grand Theft Auto V Enhanced",
+      "verdict": "broken",
+      "notes": [
+        {
+          "text": "Frame Generation stays unavailable with version.dll on an RTX 4060 laptop (v1.3.2).",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/28"
+        },
+        {
+          "text": "Listed upstream among anti-cheat games where MFG Unlocker is not supported.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "1659040": {
+      "name": "Hitman World of Assassination",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Listed upstream for the OptiScaler plugin route rather than a proxy DLL; tester reports got the menu or frame generation working that way.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "990080": {
+      "name": "Hogwarts Legacy",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Install as version.dll beside Phoenix\\Binaries\\Win64\\HogwartsLegacy.exe; the game then exposes x2 to x6 Frame Generation directly in its own graphics menu.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-6001091768"
+        },
+        {
+          "text": "Frozen image or black screen above 2x was fixed by setting the DLSS Frame Generation preset to B in NVIDIA Profile Inspector; the NVIDIA App override was greyed out on RTX 40 cards.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/19#issuecomment-5557975624"
+        },
+        {
+          "text": "In the same fix discussion a user reports the black screen returns after PC sleep or closing Profile Inspector, and toggling the FG preset back to original then B again restores it.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5573607294"
+        }
+      ]
+    },
+    "2677660": {
+      "name": "Indiana Jones and the Great Circle",
+      "verdict": "works",
+      "notes": [
+        {
+          "text": "Vulkan path with dinput8.dll: 4x MFG working without issues using the DLSSG 310.9.0 DLL via NVIDIA App override.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5538946532"
+        },
+        {
+          "text": "Dynamic MFG is unavailable on the Vulkan path per the upstream doc.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "2651280": {
+      "name": "Marvel's Spider-Man 2",
+      "verdict": "works",
+      "notes": [
+        {
+          "text": "The doc lists version.dll as the recommended proxy name based on working reports.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "1817070": {
+      "name": "Marvel's Spider-Man Remastered",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Listed upstream for the OptiScaler plugin route rather than a proxy DLL; tester reports got the menu or frame generation working that way.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "2417610": {
+      "name": "Metal Gear Solid Delta: Snake Eater",
+      "verdict": "unknown",
+      "notes": [
+        {
+          "text": "No native FG; an Engine.ini edit enables 2x frame generation, but the mod stays at 'waiting for pipeline' and higher multipliers were not achieved (v1.3.3 Hotfix 2).",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/53"
+        }
+      ]
+    },
+    "1250410": {
+      "name": "Microsoft Flight Simulator 2020",
+      "verdict": "works",
+      "notes": [
+        {
+          "text": "3x and 4x MFG verified on RTX 4090 (DX12, driver 617.14, v1.3.3 Hotfix 2) with a single version.dll and no ReShade or ASI loader; the built-in FPS limiter cut GPU load substantially at a 120 FPS cap.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5904063197"
+        },
+        {
+          "text": "The doc lists version.dll for the Steam copy and dinput8.dll for the Microsoft Store copy.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "2537590": {
+      "name": "Microsoft Flight Simulator 2024",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Frozen or flashing presentation above 2x and no Backspace menu were traced to installing via RHI; uninstalling through RHI and installing the DLL manually fixed it, and the developer closed the report as an RHI issue rather than a mod issue.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/87#issuecomment-6188004516"
+        },
+        {
+          "text": "Rolling the DLSS Frame Generation DLL back from 310.9.16 to 310.9.0 also restored MFG for one tester while keeping the latest SR DLL and Streamline.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/87#issuecomment-6163430109"
+        },
+        {
+          "text": "The doc lists version.dll as the recommended proxy, with dinput8.dll and d3d12.dll also loading.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "3265250": {
+      "name": "MindsEye",
+      "verdict": "mixed",
+      "notes": [
+        {
+          "text": "MFG with DLSS 5 works at first but the game always crashes with a UE5 error after seconds to minutes (v1.7.0, RTX 4070); the reporter suspects DLSS 5, which works fine in other games on the same system.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/142"
+        }
+      ]
+    },
+    "2246340": {
+      "name": "Monster Hunter Wilds",
+      "verdict": "mixed",
+      "notes": [
+        {
+          "text": "3x and 4x MFG work for some players; because REFramework already uses dinput8.dll on RE Engine games, install MFG Unlocker as version.dll (winmm.dll also reported working).",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5552370895"
+        },
+        {
+          "text": "A working recipe from the thread: clean the game folder, install REFramework using only its dinput8.dll (not the full zip), install the mod as winmm.dll, delete shader.cache2 to avoid stutter, and override Frame Generation to Preset B in the NVIDIA App.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5744530943"
+        },
+        {
+          "text": "Other users still crash at launch even with version.dll and REFramework; a November 2026 report crashes before the title screen on both v1.6.0 and v1.7.0 (driver 610.88) while native 2x FG works.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/165"
+        }
+      ]
+    },
+    "2584270": {
+      "name": "Mortal Shell II",
+      "verdict": "unknown",
+      "notes": [
+        {
+          "text": "The mod menu cannot be brought up in borderless window mode (v1.3.2); the status shows uiTagHookInstalled=false and liveHookInstalled=false.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/24"
+        }
+      ]
+    },
+    "4508340": {
+      "name": "Neverness to Everness",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Listed upstream for the OptiScaler plugin route rather than a proxy DLL; tester reports got the menu or frame generation working that way.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "3681010": {
+      "name": "Nioh 3",
+      "verdict": "unknown",
+      "notes": [
+        {
+          "text": "One low-detail report of black screens with the mod on v1.3.3 (same report as DOOM: The Dark Ages), with no logs or follow-up.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/40"
+        }
+      ]
+    },
+    "275850": {
+      "name": "No Man's Sky",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Listed upstream for the OptiScaler plugin route rather than a proxy DLL; tester reports got the menu or frame generation working that way.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "1371980": {
+      "name": "No Rest for the Wicked",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Listed upstream for the OptiScaler plugin route rather than a proxy DLL; tester reports got the menu or frame generation working that way.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "2638890": {
+      "name": "Onimusha: Way of the Sword",
+      "verdict": "mixed",
+      "notes": [
+        {
+          "text": "Use winmm.dll; version.dll crashes the game at launch with an illegal-instruction exception.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        },
+        {
+          "text": "The launch crash was resolved in V1.3.3 / hotfix 1 per the pinned thread.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5757179031"
+        },
+        {
+          "text": "Foliage and branch interpolation artifacts appear at every mod-driven multiplier while native 2x is clean; testing showed this is a broader DLSS-G MFG issue, reduced a lot by enabling motion blur, and absent with XeSS or FSR frame generation.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/43#issuecomment-6504350590"
+        }
+      ]
+    },
+    "4115450": {
+      "name": "Phantom Blade Zero",
+      "verdict": "mixed",
+      "notes": [
+        {
+          "text": "Rename the mod DLL to version.dll and place it in PBZ\\platform\\steam next to PBZ.exe; do not overwrite the game's own winmm.dll, which handles HDR.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-6504863639"
+        },
+        {
+          "text": "Streamline disables Frame Generation with in-engine VSync or windowed mode: set bUseVSync=False and FullscreenMode=1 in GameUserSettings.ini, and add r.VSync=0, r.Streamline.DLSSG.Enable=1 and r.Streamline.Reflex.Enable=1 under [SystemSettings] in Engine.ini.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-6504863639"
+        },
+        {
+          "text": "Test in actual gameplay, not the options or pause menu where the engine holds DLSS-G off; once in 3D rendering, Backspace applies the selected multiplier.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-6504863639"
+        },
+        {
+          "text": "Multiple RTX 4070 Ti users report cutscene artifacts (black boxes and rainbow lines, mostly at the left edge, worse at higher multipliers) with no fix as of November 2026, while another tester sees clean output.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/136"
+        }
+      ]
+    },
+    "3219030": {
+      "name": "Planet Zoo 2",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "The doc lists winmm.dll as the proxy and warns against dxgi.dll, which breaks HDR.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "3357650": {
+      "name": "Pragmata",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "v1.7.0 crashed at launch (illegal instruction) with version.dll, winmm.dll or dxgi.dll alone; installing REFramework as dinput8.dll and the mod as dxgi.dll fixed it, with 3x and 4x working flawlessly on RTX 4090.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/147#issuecomment-6699705390"
+        },
+        {
+          "text": "An earlier pinned-thread report had 4x MFG working with version.dll, and the doc lists version.dll as the recommended proxy.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5538946532"
+        },
+        {
+          "text": "Activating DLSS 5 in the mod menu crashes the game immediately on v1.7.0 (RTX 4070), while MFG alone works fine.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/137"
+        }
+      ]
+    },
+    "1895880": {
+      "name": "Ratchet & Clank: Rift Apart",
+      "verdict": "broken",
+      "notes": [
+        {
+          "text": "4x MFG did not work with dinput8.dll on DX12; the tester suspected the game's outdated Streamline integration (September 2026, DLSSG 310.9.0).",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5538946532"
+        }
+      ]
+    },
+    "1174180": {
+      "name": "Red Dead Redemption 2",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Listed upstream for the OptiScaler plugin route; this game needs the project's own OptiScaler build.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "3764200": {
+      "name": "Resident Evil Requiem",
+      "verdict": "works",
+      "notes": [
+        {
+          "text": "DX12 with version.dll: 4x MFG working without issues (DLSSG 310.9.0 via NVIDIA App override); dinput8.dll is reserved for REFramework.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5538946532"
+        },
+        {
+          "text": "The doc lists dxgi.dll as also loading, and an OptiScaler route is listed for this game.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "1643320": {
+      "name": "S.T.A.L.K.E.R. 2: Heart of Chornobyl",
+      "verdict": "works",
+      "notes": [
+        {
+          "text": "v1.6.1 broke DLSS entirely (the upscaler showed Unknown) with version.dll; the reporter confirmed v1.7.0 works great.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/115#issuecomment-6451112131"
+        },
+        {
+          "text": "The doc lists version.dll as the recommended proxy, d3d12.dll also loads, and dxgi.dll does not load.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "1636440": {
+      "name": "Silent Hill: Townfall",
+      "verdict": "works",
+      "notes": [
+        {
+          "text": "The doc lists version.dll as the recommended proxy; the game is also listed under the OptiScaler route.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "2842040": {
+      "name": "Star Wars Outlaws",
+      "verdict": "mixed",
+      "notes": [
+        {
+          "text": "Crashes at launch with version.dll on RTX 3060 Laptop and RTX 3080 Ti systems; disabling Ray Reconstruction and setting Rtx30FlipMetering=0 did not help.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/151"
+        },
+        {
+          "text": "The developer marked the crash fixed in v1.6.0, but November 2026 reports still crash on startup with v1.6.0 and v1.7.0.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/88#issuecomment-6665702375"
+        },
+        {
+          "text": "An RTX 3090 user got flickering and black screens instead of a crash with v1.5 and FG Preset C, and another user saw the MFG tab always unavailable regardless of DLL name.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/88#issuecomment-6156041858"
+        }
+      ]
+    },
+    "1622910": {
+      "name": "Still Wakes the Deep",
+      "verdict": "broken",
+      "notes": [
+        {
+          "text": "Any DLSS FG mode causes heavy artifacting, and the same happens with native 2x FG without the mod, pointing at the game's own FG implementation.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5538946532"
+        },
+        {
+          "text": "v1.3.2 crashed at launch (the mod banner appeared for a second, then crash to desktop); an older mod version worked with minor graphical glitches.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/27"
+        }
+      ]
+    },
+    "1962700": {
+      "name": "Subnautica 2",
+      "verdict": "works",
+      "notes": [
+        {
+          "text": "The doc lists version.dll as the recommended proxy; the game is also listed under the OptiScaler route.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "1466060": {
+      "name": "Tainted Grail: The Fall of Avalon",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Listed upstream for the OptiScaler plugin route rather than a proxy DLL; tester reports got the menu or frame generation working that way.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "979690": {
+      "name": "The Ascent",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Listed upstream for the OptiScaler plugin route rather than a proxy DLL; tester reports got the menu or frame generation working that way.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "3751260": {
+      "name": "The Blood of Dawnwalker",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "3x MFG runs well; 4x and above caused stutter and high latency on a 4070 Ti SUPER, and even after game patch 1.0.3 and driver 616.64 made 4x smooth the tester dropped back to 3x for latency.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5551079503"
+        },
+        {
+          "text": "A frozen picture above 2x was fixed by updating all DLSS DLLs to 310.9 and setting the Frame Generation preset to B via DLSS Swapper or NVIDIA Profile Inspector.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5558880145"
+        },
+        {
+          "text": "v1.3.2 crashed the game at launch for one tester regardless of DLL name, while v1.2.1 worked.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/29"
+        },
+        {
+          "text": "Foliage interpolation artifacts with mod-driven FG are reported here too; they also appear with native 2x at low base frame rates and are reduced by motion blur.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/43#issuecomment-5700793789"
+        }
+      ]
+    },
+    "2074920": {
+      "name": "The First Descendant",
+      "verdict": "works",
+      "notes": [
+        {
+          "text": "The doc lists dxgi.dll as the recommended proxy name based on working reports.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "2531310": {
+      "name": "The Last of Us Part II Remastered",
+      "verdict": "works",
+      "notes": [
+        {
+          "text": "DX12 with dinput8.dll: 4x MFG working without issues (DLSSG 310.9.0 via NVIDIA App override).",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-5538946532"
+        },
+        {
+          "text": "The doc lists dinput8.dll as the recommended proxy and also lists an OptiScaler route.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "1449110": {
+      "name": "The Outer Worlds 2",
+      "verdict": "works",
+      "notes": [
+        {
+          "text": "Place version.dll in Arkansas\\Binaries\\Win64 beside TheOuterWorlds2-Win64-Shipping.exe, not next to the top-folder launcher.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-6723120173"
+        },
+        {
+          "text": "Tick 'Game FG option: Unlock' or the game's DLSS FG stays off; with it, 3x applied (limit 4x) taking 39.9 real FPS to 119.8 on an RTX 3090, v1.7.0.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-6723120173"
+        },
+        {
+          "text": "Confirmed on the Battle.net-delivered Microsoft/Xbox PC package build, not just Steam.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-6723120173"
+        }
+      ]
+    },
+    "292030": {
+      "name": "The Witcher 3: Wild Hunt",
+      "verdict": "works-with-tweaks",
+      "notes": [
+        {
+          "text": "Install as winmm.dll beside witcher3.exe in bin\\x64_dx12; for Path Traced Hair enable HairWorks, path tracing and Path Traced Hair in game, and fully restart after changing Path Traced Hair or Frame Generation.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        },
+        {
+          "text": "v1.4.x leaked VRAM on every menu, map or fast-travel use until the game collapsed to single-digit FPS; a contributor submitted a fix and the thread was closed after v1.5.0 shipped.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/76"
+        },
+        {
+          "text": "3x to 6x MFG verified on RTX 4090 with DLSS-G Preset B (Preset C also works), with Path Traced Hair active on v1.4.2 and later.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-6157032246"
+        },
+        {
+          "text": "The Game Pass / Windows Store build stayed stuck at 'waiting for pipeline' while the Steam version worked on the same PC.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-6179907599"
+        }
+      ]
+    },
+    "3564740": {
+      "name": "Where Winds Meet",
+      "verdict": "mixed",
+      "notes": [
+        {
+          "text": "The doc lists winmm.dll as the recommended proxy based on working reports.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        },
+        {
+          "text": "A v1.3.3 Hotfix 2 report got no menu on Backspace and could not select a mode.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/60"
+        }
+      ]
+    },
+    "1867240": {
+      "name": "Wardogs",
+      "verdict": "unknown",
+      "notes": [
+        {
+          "text": "The menu does not appear with version.dll next to the game exe (v1.7.0, RTX 3060 Ti); the report has no logs or further detail.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/161"
+        }
+      ]
+    },
+    "3513350": {
+      "name": "Wuthering Waves",
+      "verdict": "mixed",
+      "notes": [
+        {
+          "text": "With dxgi.dll on v1.6.1 the mod stayed at 'Waiting for an active DLSS-G pipeline' (midpoint not ready at first Create); the developer said it was fixed in v1.7.0 but the reporter was still stuck after updating.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/120#issuecomment-6394938691"
+        },
+        {
+          "text": "The doc lists version.dll as the recommended proxy (dxgi.dll also loads); dinput8.dll, winmm.dll and d3d12.dll gave no menu on V1.3.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "392160": {
+      "name": "X4: Foundations",
+      "verdict": "broken",
+      "notes": [
+        {
+          "text": "On Vulkan with an RTX 3050 laptop (v1.7.0), FG Create is rejected with failure 122 and the game crashes with an access violation in sl.dlss_g.dll; the game's legacy Streamline 2.7.30 wrapper is restricted to 2x.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/164"
+        },
+        {
+          "text": "An earlier report (game 8.00, v1.3.3 Hotfix 2, RTX 4070) also crashed at launch with 4x selected.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/59"
+        },
+        {
+          "text": "Listed upstream under the OptiScaler route as an alternative way to run the mod.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "4162040": {
+      "name": "Zenless Zone Zero",
+      "verdict": "broken",
+      "notes": [
+        {
+          "text": "Crashes immediately at startup with d3d12.dll (v1.3.3 Hotfix 2); the reporter suspects the game enforces digital signature verification on the unsigned mod DLL.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/52"
+        },
+        {
+          "text": "Listed upstream among anti-cheat games where MFG Unlocker is not supported.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    }
+  }
+}

@@ -3,6 +3,7 @@ import { Check, CircleDot, Info, Minus } from "lucide-react";
 import { api } from "../lib/api";
 import { attempt } from "../lib/attempt";
 import { formatBytes, relativeTime } from "../lib/format";
+import { issuesUrl, notesFor, notesUpdated, verdictLabel } from "../lib/notes";
 import { cn } from "../lib/cn";
 import type { InstallControls } from "../lib/install";
 import type { GameEntry, ReleaseInfo } from "../lib/types";
@@ -56,6 +57,7 @@ export function OverviewTab({
     { label: "Vulkan", found: game.compat.hasVulkan },
   ];
 
+  const notes = notesFor(game.appId);
   const tier = game.compat.nvidiaTier;
   const matchedName =
     game.compat.nvidiaName !== null && game.compat.nvidiaName !== game.name
@@ -147,6 +149,57 @@ export function OverviewTab({
             </div>
           )}
         </Section>
+
+        {notes !== null && (
+          <Section
+            title="Community notes"
+            aside={
+              <span
+                className={cn(
+                  "text-[10.5px]",
+                  notes.verdict === "works"
+                    ? "text-accent"
+                    : notes.verdict === "broken"
+                      ? "text-danger/80"
+                      : "text-warn",
+                )}
+              >
+                {verdictLabel(notes.verdict)}
+              </span>
+            }
+          >
+            <ul className="space-y-1.5">
+              {notes.notes.map((note) => (
+                <li
+                  key={note.text}
+                  className="flex gap-1.5 text-[11.5px] leading-snug text-ink-muted"
+                >
+                  <Info size={12} className="mt-0.5 shrink-0 text-ink-dim" />
+                  <span className="min-w-0">
+                    {note.text}{" "}
+                    <button
+                      type="button"
+                      className="text-ink-dim underline decoration-line-strong underline-offset-2 transition-colors duration-150 ease-out hover:text-ink"
+                      onClick={() => window.open(note.source, "_blank")}
+                    >
+                      source
+                    </button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-2.5 border-t border-line pt-2.5 text-[10.5px] text-ink-dim">
+              Curated {notesUpdated}.{" "}
+              <button
+                type="button"
+                className="underline decoration-line-strong underline-offset-2 transition-colors duration-150 ease-out hover:text-ink"
+                onClick={() => window.open(issuesUrl, "_blank")}
+              >
+                Browse compatibility reports
+              </button>
+            </div>
+          </Section>
+        )}
 
         <Section
           title="Executable"

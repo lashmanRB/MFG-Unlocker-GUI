@@ -1,4 +1,5 @@
 import { GameArt } from "./GameArt";
+import { NotesBadge } from "./NotesBadge";
 import { StateChip } from "./StateChip";
 import { cn } from "../lib/cn";
 import { libraryLabel } from "../lib/game";
@@ -55,6 +56,7 @@ export function GameRow({ game, selected, checked, onSelect, onContextMenu }: Ga
         </span>
         <span className="mt-1 flex min-w-0 items-center gap-1.5">
           <StateChip state={game.compat.state} />
+          <NotesBadge appId={game.appId} />
           <span className="truncate text-[10.5px] text-ink-dim max-[920px]:hidden">
             {libraryLabel(game)}
           </span>

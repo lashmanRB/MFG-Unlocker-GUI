@@ -1,6 +1,7 @@
 import { Download, FolderOpen, Play, Undo2 } from "lucide-react";
 import { Button } from "./Button";
 import { GameArt } from "./GameArt";
+import { NotesBadge } from "./NotesBadge";
 import { StateChip } from "./StateChip";
 import { formatGigabytes, middleTruncate } from "../lib/format";
 import type { InstallControls } from "../lib/install";
@@ -39,6 +40,7 @@ export function GameHeader({
               {game.name}
             </h1>
             <StateChip state={game.compat.state} />
+            <NotesBadge appId={game.appId} />
             {game.source === "manual" && (
               <span className="mono shrink-0 rounded-[3px] border border-line px-1.5 py-px text-[10px] tracking-[0.04em] text-ink-dim">
                 manual
