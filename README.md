@@ -19,6 +19,9 @@ from the mod's releases and checks the published SHA-256 before copying anything
   binary, so an Unreal game ends up in `Binaries\Win64`, not in the game root.
 - Checks whether a game can take the mod by looking for the DLLs the mod hooks, and cross checks
   NVIDIA's published per-title list on top of that.
+- Carries curated community notes per game, matched by Steam app id: the tweaks and traps other
+  players reported for that title, each with a link to its source, plus a shortcut to the mod's
+  compatibility issue list.
 - Installs the mod DLL under a proxy name that is free in that folder, takes care of the Bink route
   when a game links Bink video, and refuses to overwrite anything the game ships.
 - Undoes an install completely: removes the DLL, gives the game's own Bink DLL its name back, and
@@ -121,10 +124,12 @@ The scan looks in the folder of the chosen executable, its parent and its grandp
 | `vulkan-1.dll` | a Vulkan runtime, where DirectX proxy names may not be loaded |
 | `OptiScaler.ini` or `OptiScaler.dll` | OptiScaler is installed here, which changes the install route |
 
-Frame generation plus Streamline reads as **supported**. Frame generation alone reads as **likely**,
+Frame generation plus Streamline reads as **hooks found**. Frame generation alone reads as **likely**,
 because the mod can often attach to a statically linked integration too. Streamline without frame
-generation, or DLSS Super Resolution on its own, reads as **no frame gen**, and nothing found at all
-reads as **unknown**.
+generation, or DLSS Super Resolution on its own, reads as **no FG hooks**, and nothing found at all
+reads as **unknown**. The chips name what the scan found on disk, not what the game's own menu will
+offer: a game can ship the files and still hide Frame Generation until it runs on DirectX 12. Hover
+a chip for the exact reading.
 
 ### NVIDIA's list
 
@@ -144,6 +149,21 @@ the game list.
 When the probe finds no frame generation files but NVIDIA does list the title, the state becomes
 **likely** and a note says so: the plug-in probably comes from the NVIDIA app rather than the game
 folder. That case is common and it is why the list is worth having.
+
+## Community notes
+
+Some games need a nudge the scan cannot see: a launch option, a preset that avoids a freeze, a proxy
+name another mod already owns. The app ships a small curated notes file for that, matched by Steam
+app id, gathered from the mod's pinned compatibility thread, its compatibility-labelled issues and
+its per-game filename table.
+
+A game with notes gets a small marker beside its compatibility chip, and a **Community notes** block
+in the Overview tab: a verdict (works, needs tweaks, broken, mixed reports), the notes themselves,
+and a source link per note back to the issue or comment it came from. The block ends with a link to
+the mod's filtered issue list for everything not covered yet.
+
+The file is part of the app and is refreshed with each release, so the notes never depend on a live
+GitHub search. Folders added by hand have no app id and cannot be matched, so they show no notes.
 
 ## Installing the mod
 
@@ -295,7 +315,7 @@ means deleting the exe and its data folder, after undoing the mod from each game
 - Windows 10 or 11 with the WebView2 runtime, which current Windows already has
 - For DLSS MFG: an RTX 20, 30, 40 or 50 card. RTX 20 and RTX 30 are experimental in the mod itself
 - The game needs a Streamline Frame Generation integration, or one supplied by the NVIDIA app. The
-  mod's README has the per-game caveats
+  mod's README and the app's community notes carry the per-game caveats
 - XeSS MFG through OptiScaler works on NVIDIA, AMD and Intel cards, but that route is set up in
   OptiScaler, not here
 
