@@ -295,7 +295,7 @@ const seededSettings = new Map<string, Partial<GameSettings>>([
 const cyberpunkStatus: StatusSummary = {
   ageSeconds: 4,
   pid: 8812,
-  protocolVersion: 40,
+  protocolVersion: 41,
   gpuFamily: 1,
   graphicsApi: 1,
   bridgeReady: true,
@@ -316,7 +316,7 @@ const cyberpunkStatus: StatusSummary = {
 const liesStatus: StatusSummary = {
   ageSeconds: 260,
   pid: 11920,
-  protocolVersion: 40,
+  protocolVersion: 41,
   gpuFamily: 1,
   graphicsApi: 1,
   bridgeReady: false,

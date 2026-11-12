@@ -166,12 +166,20 @@ fn control_json(path: &Path, settings: &GameSettings) -> String {
         "fixed" => (false, "fixed"),
         _ => (true, "follow"),
     };
+    // v1.7.1 migrates a saved preset B back to game/driver unless this marker
+    // says the presets were picked on purpose, so keep it set once it is there.
+    let defaults = control
+        .get("dlssgDefaults")
+        .and_then(|value| value.as_u64())
+        .filter(|value| *value >= 1)
+        .unwrap_or(1);
     let ours = [
         ("followGame", Value::Bool(follow_game)),
         ("mode", Value::String(mode.to_string())),
         ("multiplier", Value::from(settings.multiplier.clamp(1, 6))),
         ("dynamicTargetFrameRate", Value::from(target_frame_rate(settings))),
         ("dlssgPreset", Value::from(settings.dlssg_preset.min(3))),
+        ("dlssgDefaults", Value::from(defaults)),
         (
             "dlssSrPreset",
             Value::from(valid_preset(settings.dlss_sr_preset, &[0, 10, 11, 12, 13])),
@@ -835,6 +843,22 @@ Thing=7\r\n\
         assert_eq!(control["vsyncMode"], 2);
         assert_eq!(control["reflexFrameLimitFps"], 1000);
         assert_eq!(control["version"], 13);
+        let _ = std::fs::remove_dir_all(&game);
+    }
+
+    #[test]
+    fn the_preset_defaults_marker_is_kept() {
+        let game = scratch("presetmarker");
+        write(&game, &GameSettings::default()).unwrap();
+        let text = std::fs::read_to_string(game.join(CONTROL_FILE)).unwrap();
+        let control: Value = serde_json::from_str(&text).unwrap();
+        assert_eq!(control["dlssgDefaults"], 1);
+
+        std::fs::write(game.join(CONTROL_FILE), "{\"dlssgDefaults\": 2}\n").unwrap();
+        write(&game, &GameSettings::default()).unwrap();
+        let text = std::fs::read_to_string(game.join(CONTROL_FILE)).unwrap();
+        let control: Value = serde_json::from_str(&text).unwrap();
+        assert_eq!(control["dlssgDefaults"], 2);
         let _ = std::fs::remove_dir_all(&game);
     }
 

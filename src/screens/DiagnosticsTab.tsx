@@ -19,15 +19,19 @@ interface HeartbeatTone {
   pulse: boolean;
 }
 
-function heartbeatTone(ageSeconds: number): HeartbeatTone {
-  if (ageSeconds < 5) {
+// mod v1.7.1 (protocol 41) writes the status file on change and every 30s,
+// not every second, so the old 5s/30s bands would call a running game dead
+function heartbeatTone(ageSeconds: number, protocolVersion: number): HeartbeatTone {
+  const stale = protocolVersion >= 41 ? 45 : 5;
+  const dead = protocolVersion >= 41 ? 90 : 30;
+  if (ageSeconds < stale) {
     return {
       label: "live",
       className: "border-accent/30 bg-accent/10 text-accent",
       pulse: true,
     };
   }
-  if (ageSeconds < 30) {
+  if (ageSeconds < dead) {
     return {
       label: "stale",
       className: "border-warn/30 bg-warn/10 text-warn",
@@ -125,7 +129,7 @@ export function DiagnosticsTab({ game, active }: { game: GameEntry; active: bool
   const { status, loading, error } = useStatus(game.id, active);
   const logs = useLogs(game.id, active);
 
-  const tone = status === null ? null : heartbeatTone(status.ageSeconds);
+  const tone = status === null ? null : heartbeatTone(status.ageSeconds, status.protocolVersion);
 
   const copyLog = async () => {
     if (logs.text.length === 0) return;
