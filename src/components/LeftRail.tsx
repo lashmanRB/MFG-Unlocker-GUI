@@ -83,7 +83,7 @@ export function LeftRail({
     const nvidia = games.filter((game) => matchesFilter(game, "nvidia")).length;
     return [
       { value: "all", label: "All", count: games.length },
-      { value: "supported", label: "Supported", count: supported },
+      { value: "supported", label: "Hookable", count: supported },
       { value: "installed", label: "Installed", count: installed },
       { value: "nvidia", label: "NVIDIA", count: nvidia },
     ];
