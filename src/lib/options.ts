@@ -41,6 +41,7 @@ export const dlssRrPresetChoices: Choice<number>[] = [
 export const languageChoices: Choice<string>[] = [
   { value: "auto", label: "Auto (system)" },
   { value: "en", label: "English" },
+  { value: "fr-FR", label: "French" },
   { value: "zh-CN", label: "Chinese (simplified)" },
   { value: "uk-UA", label: "Ukrainian" },
   { value: "it-IT", label: "Italian" },
@@ -72,3 +73,55 @@ export function flipMeteringValue(choice: FlipMeteringChoice): boolean | null {
   if (choice === "auto") return null;
   return choice === "on";
 }
+
+// The mod's [Keybinds] actions, in its menu order. Values are modifier
+// prefixes plus a virtual-key code, empty means unbound.
+export const keybindActions: { key: string; label: string }[] = [
+  { key: "RaiseMultiplier", label: "Raise multiplier" },
+  { key: "LowerMultiplier", label: "Lower multiplier" },
+  { key: "Dynamic", label: "Dynamic mode" },
+  { key: "FollowGame", label: "Follow game" },
+  { key: "Off", label: "Off (1x)" },
+  { key: "Mode2x", label: "Fixed 2x" },
+  { key: "Mode3x", label: "Fixed 3x" },
+  { key: "Mode4x", label: "Fixed 4x" },
+  { key: "Mode5x", label: "Fixed 5x" },
+  { key: "Mode6x", label: "Fixed 6x" },
+  { key: "FpsReadout", label: "FPS readout" },
+  { key: "PinPanel", label: "Pin panel" },
+  { key: "DlssPresetNext", label: "Next DLSS preset" },
+  { key: "DlssPresetPrevious", label: "Previous DLSS preset" },
+  { key: "DlssPresetDefault", label: "Default DLSS preset" },
+];
+
+export const optiScalerUiChoices: Choice<string>[] = [
+  { value: "", label: "Mod default" },
+  { value: "shared", label: "Both menus" },
+  { value: "rtxmfg", label: "MFG Unlocker menu" },
+  { value: "optiscaler", label: "OptiScaler tab only" },
+];
+
+export const dlss5StageChoices: Choice<number>[] = [
+  { value: 0, label: "Auto" },
+  { value: 1, label: "Before upscaling" },
+  { value: 2, label: "After upscaling" },
+  { value: 3, label: "Present" },
+];
+
+export const dlss5ModelChoices: Choice<number>[] = [
+  { value: 0, label: "Model A" },
+  { value: 1, label: "Model B" },
+  { value: 2, label: "Model C" },
+];
+
+export const xemfgRoundingChoices: Choice<number>[] = [
+  { value: 0, label: "At most" },
+  { value: 1, label: "Nearest" },
+  { value: 2, label: "At least" },
+];
+
+export const latencyPacingChoices: Choice<number>[] = [
+  { value: 0, label: "Auto" },
+  { value: 1, label: "On" },
+  { value: 2, label: "Off" },
+];

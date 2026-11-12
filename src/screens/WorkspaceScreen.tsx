@@ -19,6 +19,7 @@ interface WorkspaceScreenProps {
   game: GameEntry;
   release: ReleaseInfo | null;
   nvidiaFetchedAt: number | null;
+  gpuFamily: string | null;
   settingsEpoch: number;
   onGameUpdated: (entry: GameEntry) => void;
   onDirtyChange: (dirty: boolean) => void;
@@ -29,6 +30,7 @@ export function WorkspaceScreen({
   game,
   release,
   nvidiaFetchedAt,
+  gpuFamily,
   settingsEpoch,
   onGameUpdated,
   onDirtyChange,
@@ -206,7 +208,8 @@ export function WorkspaceScreen({
       >
         <SettingsTab
           key={`${game.id}:${settingsEpoch}`}
-          gameId={game.id}
+          game={game}
+          gpuFamily={gpuFamily}
           onDirtyChange={onDirtyChange}
           onGuidedSetup={() => setWizard(true)}
         />

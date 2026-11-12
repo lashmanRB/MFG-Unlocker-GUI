@@ -34,7 +34,8 @@ from the mod's releases and checks the published SHA-256 before copying anything
   itself, NVIDIA's per-title list, cover art and the game list.
 - Edits all of the mod's settings from outside the game: mode, multiplier, dynamic target, the three
   preset families, V-Sync, the Reflex FPS cap, menu language and key, and the two compatibility
-  switches.
+  switches. Since mod v1.7.1 also the keybinds, the latency readout and probe, the write-log switch,
+  XeMFG standalone, and the DLSS 5 look with its share codes.
 - Reads the mod's live status file and runtime logs, which is how you find out whether the mod
   actually attached inside a game.
 - Keeps everything in one folder next to its own exe: no installer, no AppData, no registry writes.
@@ -249,6 +250,21 @@ settings, for reference.
 Saved settings apply the next time the game starts. The presets are the exception: the mod can swap
 them while a DirectX 12 game runs.
 
+The v1.7.1 surfaces sit in the same form. **Keybinds** binds the mod's fifteen actions (multiplier
+up and down, mode switches, the FPS readout, the preset cycle) with Ctrl/Shift/Alt combinations or
+mouse 4/5; clearing a binding leaves the action unbound, and the on-screen note can be turned off.
+**Menu** gains the pinned latency row and the latency monitor switch, **Diagnostics** the write-log
+switch and the latency probe csv, and **Compatibility** the OptiScaler menu ownership choice (both
+menus, this menu, or the OptiScaler tab only). **XeMFG** carries the experimental standalone block:
+frame count, dynamic target, rounding, flip queue and pacing. It needs Intel's XeSS runtime in
+`RTXMFG-XeSS` beside the mod; the app does not ship it.
+
+**DLSS 5** appears once `nvngx_dlssnr.dll` is found beside the executable: the hook stage, model,
+the look strengths, resolution scale, half rate and pass count, plus the preset store. Presets are
+the mod's `DLSS5-` share codes, one per line in `RTXMFG-Dlss5Presets.txt` beside the game; the tab
+saves, imports, exports and deletes them, and a paste of chat text around a code works. The advanced
+pass, blend and halo keys stay in the mod's own menu.
+
 ## Diagnostics
 
 ![Diagnostics](docs/diagnostics.png)
@@ -269,6 +285,11 @@ and refreshes every two seconds while the tab is open:
 The Runtime block is the "did it actually attach" answer: hook bridge loaded, the game's frame
 generation state, whether the mod applied its request, the graphics API, GPU family, NVIDIA tier and
 the Streamline `setOptions` result code (0 is accepted).
+
+When the mod's latency monitor is running, a **Latency** block shows mean, p99, real, game, frame
+generation and display latency in milliseconds, with the monitor state and the snapshot age. The
+mod writes the status file on state changes and every 30 seconds since v1.7.1, so the heartbeat
+bands follow that cadence instead of calling an idle running game dead.
 
 The Logs block lists every `RTXMFG-*.log` in the mod folder, newest first. Each launch keeps the
 previous runtime log as `.previous.log`, so a crash can be compared against the run before it. Logs

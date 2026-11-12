@@ -14,6 +14,40 @@ export function isVkCode(value: string): boolean {
   return /^\d+$/.test(value.trim());
 }
 
+// A keybind as the mod's [Keybinds] section keeps it: optional Ctrl/Shift/Alt
+// prefixes and a virtual-key code in uppercase hex, like Ctrl+Shift+0x21.
+export function captureCombo(event: KeyboardEvent): string | null {
+  const code = captureVk(event);
+  if (code === null) return null;
+  if (event.metaKey) return null;
+  const parts: string[] = [];
+  if (event.ctrlKey) parts.push("Ctrl");
+  if (event.shiftKey) parts.push("Shift");
+  if (event.altKey) parts.push("Alt");
+  parts.push(`0x${code.toString(16).toUpperCase().padStart(2, "0")}`);
+  return parts.join("+");
+}
+
+export function comboLabel(value: string): string {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return "";
+  const parts = trimmed.split("+");
+  const key = parts[parts.length - 1];
+  const code = key.startsWith("0x") || key.startsWith("0X")
+    ? Number.parseInt(key.slice(2), 16)
+    : Number.parseInt(key, 10);
+  const names = parts.slice(0, -1).map((part) => {
+    const lower = part.toLowerCase();
+    if (lower === "ctrl" || lower === "control") return "Ctrl";
+    if (lower === "shift") return "Shift";
+    if (lower === "alt") return "Alt";
+    return part;
+  });
+  if (!Number.isInteger(code)) return trimmed;
+  names.push(vkLabel(String(code)));
+  return names.join(" + ");
+}
+
 export function vkLabel(value: string): string {
   const trimmed = value.trim();
   if (trimmed.length === 0) return "";

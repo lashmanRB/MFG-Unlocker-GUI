@@ -7,6 +7,7 @@ import { formatBytes, middleTruncate, relativeTime } from "../lib/format";
 import type { GameEntry } from "../lib/types";
 import { Button } from "../components/Button";
 import { Callout } from "../components/Callout";
+import { LatencyPanel } from "../components/LatencyPanel";
 import { Section } from "../components/Section";
 import { Skeleton } from "../components/Skeleton";
 import { useLogs } from "../hooks/useLogs";
@@ -224,6 +225,8 @@ export function DiagnosticsTab({ game, active }: { game: GameEntry; active: bool
           {status !== null && <span className="mono"> pid {status.pid}</span>}
         </p>
       </Section>
+
+      {status !== null && <LatencyPanel status={status} />}
 
       {status !== null && (
         <Section

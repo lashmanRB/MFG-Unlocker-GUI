@@ -18,6 +18,7 @@ export interface CompatReport {
   hasSuperRes: boolean;
   hasVulkan: boolean;
   hasOptiScaler: boolean;
+  hasDlss5: boolean;
   nvidiaTier: number;
   nvidiaName: string | null;
   notes: string[];
@@ -142,9 +143,41 @@ export interface GameSettings {
   layoutScale: string;
   rtx30FlipMetering: boolean | null;
   gpuNameOverride: boolean;
+  writeLogFile: boolean;
+  pinnedLatency: boolean;
+  latencyMonitor: boolean;
+  latencyProbe: boolean;
+  showNote: boolean;
+  keybinds: Record<string, string>;
+  optiScalerUi: string | null;
+  xemfgStandalone: boolean;
+  xemfgFrames: number;
+  xemfgDynamic: boolean;
+  xemfgTargetFps: number;
+  xemfgRounding: number;
+  xemfgAllow1x: boolean;
+  xemfgTargetAsCap: boolean;
+  xemfgFlipQueue: number;
+  latencyPacing: number;
+  dlss5: boolean;
+  dlss5HookStage: number;
+  dlss5Model: number;
+  dlss5OverallIntensity: number;
+  dlss5StructureIntensity: number;
+  dlss5ToneIntensity: number;
+  dlss5CharacterIntensity: number;
+  dlss5ResolutionScale: number;
+  dlss5ResolutionScaleAuto: boolean;
+  dlss5Boost: boolean;
+  dlss5PassCount: number;
 
   hasControlFile: boolean;
   hasIniFile: boolean;
+}
+
+export interface Dlss5Preset {
+  name: string;
+  code: string;
 }
 
 export interface StatusSummary {
@@ -166,6 +199,15 @@ export interface StatusSummary {
   dlssFps: number;
   lastSetOptionsResult: number;
   patchRoute: string;
+  latencyAvailable: boolean;
+  latencyState: number;
+  latencyMeanUs: number;
+  latencyP99Us: number;
+  latencyRealUs: number;
+  latencyGameUs: number;
+  latencyFgUs: number;
+  latencyDisplayUs: number;
+  latencyAgeMs: number;
 }
 
 export interface LogFile {

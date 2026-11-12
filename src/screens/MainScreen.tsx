@@ -271,6 +271,7 @@ export default function MainScreen() {
         game={selected}
         release={release}
         nvidiaFetchedAt={result?.nvidiaFetchedAt ?? null}
+        gpuFamily={result?.gpu?.family ?? null}
         settingsEpoch={settingsEpoch}
         onGameUpdated={updateGame}
         onDirtyChange={setSettingsDirty}

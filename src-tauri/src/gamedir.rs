@@ -175,11 +175,13 @@ pub struct DllProbe {
     pub super_res: bool,
     pub vulkan: bool,
     pub optiscaler: bool,
+    pub dlss5: bool,
 }
 
 impl DllProbe {
     fn complete(&self) -> bool {
         self.frame_gen && self.streamline && self.super_res && self.vulkan && self.optiscaler
+            && self.dlss5
     }
 }
 
@@ -233,6 +235,7 @@ fn scan_dlls(dir: &Path, probe: &mut DllProbe) {
             "vulkan-1.dll" => probe.vulkan = true,
             "optiscaler.ini" | "optiscaler.dll" => probe.optiscaler = true,
             "optiscaler" if is_dir => probe.optiscaler = true,
+            "nvngx_dlssnr.dll" => probe.dlss5 = true,
             _ => {}
         }
     }

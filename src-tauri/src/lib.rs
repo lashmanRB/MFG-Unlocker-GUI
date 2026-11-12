@@ -2,6 +2,7 @@ mod commands;
 mod appupdate;
 mod compat;
 mod covers;
+mod dlss5;
 mod gamedir;
 mod install;
 mod model;
@@ -47,6 +48,11 @@ pub fn run() {
             commands::read_settings,
             commands::write_settings,
             commands::read_status,
+            commands::dlss5_presets,
+            commands::dlss5_save_preset,
+            commands::dlss5_import,
+            commands::dlss5_delete_preset,
+            commands::dlss5_export_code,
             commands::list_logs,
             commands::read_log,
             commands::launch_game,

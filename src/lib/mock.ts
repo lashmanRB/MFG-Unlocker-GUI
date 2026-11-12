@@ -3,6 +3,7 @@ import type {
   ApplyResult,
   AutoUpdateReport,
   CompatReport,
+  Dlss5Preset,
   ExeCandidate,
   GameEntry,
   GameSettings,
@@ -53,6 +54,7 @@ const baseCompat: CompatReport = {
   hasSuperRes: true,
   hasVulkan: false,
   hasOptiScaler: false,
+  hasDlss5: false,
   nvidiaTier: 0,
   nvidiaName: null,
   notes: [],
@@ -118,6 +120,7 @@ const cyberpunk = makeGame({
   compat: {
     nvidiaTier: 6,
     nvidiaName: "Cyberpunk 2077",
+    hasDlss5: true,
     notes: ["Frame generation files came from the 2.3 patch, DLSS-G 310.9.16 detected"],
   },
   install: {
@@ -283,6 +286,33 @@ const baseSettings: GameSettings = {
   layoutScale: "",
   rtx30FlipMetering: null,
   gpuNameOverride: false,
+  writeLogFile: true,
+  pinnedLatency: false,
+  latencyMonitor: true,
+  latencyProbe: false,
+  showNote: true,
+  keybinds: {},
+  optiScalerUi: null,
+  xemfgStandalone: false,
+  xemfgFrames: 2,
+  xemfgDynamic: false,
+  xemfgTargetFps: 0,
+  xemfgRounding: 1,
+  xemfgAllow1x: false,
+  xemfgTargetAsCap: false,
+  xemfgFlipQueue: 0,
+  latencyPacing: 0,
+  dlss5: false,
+  dlss5HookStage: 0,
+  dlss5Model: 0,
+  dlss5OverallIntensity: 1,
+  dlss5StructureIntensity: 1,
+  dlss5ToneIntensity: 1,
+  dlss5CharacterIntensity: -1,
+  dlss5ResolutionScale: 100,
+  dlss5ResolutionScaleAuto: false,
+  dlss5Boost: false,
+  dlss5PassCount: 1,
   hasControlFile: true,
   hasIniFile: true,
 };
@@ -311,6 +341,15 @@ const cyberpunkStatus: StatusSummary = {
   dlssFps: 233.6,
   lastSetOptionsResult: 0,
   patchRoute: "dx12",
+  latencyAvailable: true,
+  latencyState: 2,
+  latencyMeanUs: 18400,
+  latencyP99Us: 26100,
+  latencyRealUs: 17200,
+  latencyGameUs: 9800,
+  latencyFgUs: 4100,
+  latencyDisplayUs: 3300,
+  latencyAgeMs: 400,
 };
 
 const liesStatus: StatusSummary = {
@@ -332,6 +371,15 @@ const liesStatus: StatusSummary = {
   dlssFps: 284.8,
   lastSetOptionsResult: 5,
   patchRoute: "dx12",
+  latencyAvailable: false,
+  latencyState: 0,
+  latencyMeanUs: 0,
+  latencyP99Us: 0,
+  latencyRealUs: 0,
+  latencyGameUs: 0,
+  latencyFgUs: 0,
+  latencyDisplayUs: 0,
+  latencyAgeMs: 0,
 };
 
 const statusByGame = new Map<string, StatusSummary>([
@@ -615,4 +663,36 @@ export const mock = {
     if (path.length === 0) return Promise.reject(new Error("Empty path"));
     return Promise.resolve();
   },
+
+  dlss5Presets: (gameId: string): Promise<Dlss5Preset[]> =>
+    Promise.resolve([...(dlss5PresetsByGame.get(gameId) ?? [])]),
+
+  dlss5SavePreset: (gameId: string, name: string): Promise<Dlss5Preset> => {
+    const preset = { name: name.trim() || "Preset", code: mockDlss5Code };
+    const list = dlss5PresetsByGame.get(gameId) ?? [];
+    list.push(preset);
+    dlss5PresetsByGame.set(gameId, list);
+    return Promise.resolve({ ...preset });
+  },
+
+  dlss5Import: (gameId: string, text: string): Promise<Dlss5Preset> => {
+    const found = text.match(/DLSS5-[0-9A-HJKMNP-TV-Z-]+/i);
+    if (!found) return Promise.reject(new Error("No DLSS5- share code in that text"));
+    const preset = { name: "Imported", code: found[0].toUpperCase() };
+    const list = dlss5PresetsByGame.get(gameId) ?? [];
+    list.push(preset);
+    dlss5PresetsByGame.set(gameId, list);
+    return Promise.resolve({ ...preset });
+  },
+
+  dlss5DeletePreset: (gameId: string, name: string): Promise<void> => {
+    const list = (dlss5PresetsByGame.get(gameId) ?? []).filter((preset) => preset.name !== name);
+    dlss5PresetsByGame.set(gameId, list);
+    return Promise.resolve();
+  },
+
+  dlss5ExportCode: (_gameId: string): Promise<string> => Promise.resolve(mockDlss5Code),
 };
+
+const mockDlss5Code = "DLSS5-0G00M0CKPRESETC0DE0000000000";
+const dlss5PresetsByGame = new Map<string, Dlss5Preset[]>();

@@ -9,6 +9,25 @@ const CONTROL_VERSION: u32 = 13;
 // defaults past it, so an oversized save must never reach the game folder.
 const CONTROL_MAX_BYTES: usize = 4096;
 
+// The mod's [Keybinds] actions, in its menu order.
+const KEYBIND_ACTIONS: [&str; 15] = [
+    "RaiseMultiplier",
+    "LowerMultiplier",
+    "Dynamic",
+    "FollowGame",
+    "Off",
+    "Mode2x",
+    "Mode3x",
+    "Mode4x",
+    "Mode5x",
+    "Mode6x",
+    "FpsReadout",
+    "PinPanel",
+    "DlssPresetNext",
+    "DlssPresetPrevious",
+    "DlssPresetDefault",
+];
+
 pub fn read(game_dir: &Path) -> Result<GameSettings, String> {
     let control_path = game_dir.join(CONTROL_FILE);
     let ini_path = game_dir.join(UI_INI);
@@ -131,6 +150,39 @@ fn read_control(object: &Map<String, Value>, settings: &mut GameSettings) {
 
     settings.generated_only_debug = flag(object, "generatedOnlyDebug");
     settings.interval_logging = flag(object, "intervalLogging");
+
+    if let Some(value) = object.get("optiScalerUi").and_then(Value::as_str) {
+        if matches!(value, "shared" | "rtxmfg" | "optiscaler") {
+            settings.opti_scaler_ui = Some(value.to_string());
+        }
+    }
+    settings.xemfg_standalone = flag(object, "xemfgStandalone");
+    settings.xemfg_frames = integer(object, "xemfgFrames").unwrap_or(2).clamp(2, 6);
+    settings.xemfg_dynamic = flag(object, "xemfgDynamic");
+    settings.xemfg_target_fps = integer(object, "xemfgTargetFps").unwrap_or(0).min(1000);
+    settings.xemfg_rounding = integer(object, "xemfgRounding").unwrap_or(1).min(2);
+    settings.xemfg_allow1x = flag(object, "xemfgAllow1x");
+    settings.xemfg_target_as_cap = flag(object, "xemfgTargetAsCap");
+    settings.xemfg_flip_queue = integer(object, "xemfgFlipQueue").unwrap_or(0).min(2);
+    settings.latency_pacing = integer(object, "latencyPacing").unwrap_or(0).min(2);
+    settings.dlss5 = flag(object, "dlss5");
+    settings.dlss5_hook_stage = integer(object, "dlss5HookStage").unwrap_or(0).min(3);
+    settings.dlss5_model = integer(object, "dlss5Model").unwrap_or(0).min(2);
+    settings.dlss5_overall_intensity = real(object, "dlss5OverallIntensity", 0.0, 1.0, 1.0);
+    settings.dlss5_structure_intensity = real(object, "dlss5StructureIntensity", 0.0, 2.0, 1.0);
+    settings.dlss5_tone_intensity = real(object, "dlss5ToneIntensity", 0.0, 2.0, 1.0);
+    settings.dlss5_character_intensity = real(object, "dlss5CharacterIntensity", -1.0, 2.0, -1.0);
+    settings.dlss5_resolution_scale = real(object, "dlss5ResolutionScale", 0.0, 200.0, 100.0);
+    settings.dlss5_resolution_scale_auto = flag(object, "dlss5ResolutionScaleAuto");
+    settings.dlss5_boost = flag(object, "dlss5Boost");
+    settings.dlss5_pass_count = integer(object, "dlss5PassCount").unwrap_or(1).clamp(1, 10);
+}
+
+fn real(object: &Map<String, Value>, key: &str, min: f32, max: f32, fallback: f32) -> f32 {
+    match object.get(key).and_then(Value::as_f64) {
+        Some(value) if value.is_finite() => (value as f32).clamp(min, max),
+        _ => fallback,
+    }
 }
 
 fn read_preferences(text: &str, settings: &mut GameSettings) {
@@ -155,6 +207,26 @@ fn read_preferences(text: &str, settings: &mut GameSettings) {
     }
     if let Some(value) = ini_value(&entries, "Compatibility", "GpuNameOverride") {
         settings.gpu_name_override = read_bool(value).unwrap_or(false);
+    }
+    if let Some(value) = ini_value(&entries, "Diagnostics", "Logging") {
+        settings.write_log_file = read_bool(value).unwrap_or(true);
+    }
+    if let Some(value) = ini_value(&entries, "Overlay", "PinnedLatency") {
+        settings.pinned_latency = read_bool(value).unwrap_or(false);
+    }
+    if let Some(value) = ini_value(&entries, "Overlay", "LatencyMonitor") {
+        settings.latency_monitor = read_bool(value).unwrap_or(true);
+    }
+    if let Some(value) = ini_value(&entries, "Diagnostics", "LatencyProbe") {
+        settings.latency_probe = read_bool(value).unwrap_or(false);
+    }
+    if let Some(value) = ini_value(&entries, "Keybinds", "ShowNote") {
+        settings.show_note = read_bool(value).unwrap_or(true);
+    }
+    for action in KEYBIND_ACTIONS {
+        if let Some(value) = ini_value(&entries, "Keybinds", action) {
+            settings.keybinds.insert(action.to_string(), value.to_string());
+        }
     }
 }
 
@@ -194,6 +266,44 @@ fn control_json(path: &Path, settings: &GameSettings) -> String {
         ("dynamicTargetFrameRate", Value::from(target_frame_rate(settings))),
         ("dlssgPreset", Value::from(settings.dlssg_preset.min(3))),
         ("dlssgDefaults", Value::from(defaults)),
+        ("xemfgStandalone", Value::Bool(settings.xemfg_standalone)),
+        ("xemfgFrames", Value::from(settings.xemfg_frames.clamp(2, 6))),
+        ("xemfgDynamic", Value::Bool(settings.xemfg_dynamic)),
+        ("xemfgTargetFps", Value::from(settings.xemfg_target_fps.min(1000))),
+        ("xemfgRounding", Value::from(settings.xemfg_rounding.min(2))),
+        ("xemfgAllow1x", Value::Bool(settings.xemfg_allow1x)),
+        ("xemfgTargetAsCap", Value::Bool(settings.xemfg_target_as_cap)),
+        ("xemfgFlipQueue", Value::from(settings.xemfg_flip_queue.min(2))),
+        ("latencyPacing", Value::from(settings.latency_pacing.min(2))),
+        ("dlss5", Value::Bool(settings.dlss5)),
+        ("dlss5HookStage", Value::from(settings.dlss5_hook_stage.min(3))),
+        ("dlss5Model", Value::from(settings.dlss5_model.min(2))),
+        (
+            "dlss5OverallIntensity",
+            Value::from(settings.dlss5_overall_intensity.clamp(0.0, 1.0)),
+        ),
+        (
+            "dlss5StructureIntensity",
+            Value::from(settings.dlss5_structure_intensity.clamp(0.0, 2.0)),
+        ),
+        (
+            "dlss5ToneIntensity",
+            Value::from(settings.dlss5_tone_intensity.clamp(0.0, 2.0)),
+        ),
+        (
+            "dlss5CharacterIntensity",
+            Value::from(settings.dlss5_character_intensity.clamp(-1.0, 2.0)),
+        ),
+        (
+            "dlss5ResolutionScale",
+            Value::from(settings.dlss5_resolution_scale.clamp(0.0, 200.0)),
+        ),
+        (
+            "dlss5ResolutionScaleAuto",
+            Value::Bool(settings.dlss5_resolution_scale_auto),
+        ),
+        ("dlss5Boost", Value::Bool(settings.dlss5_boost)),
+        ("dlss5PassCount", Value::from(settings.dlss5_pass_count.clamp(1, 10))),
         (
             "dlssSrPreset",
             Value::from(valid_preset(settings.dlss_sr_preset, &[0, 10, 11, 12, 13])),
@@ -214,15 +324,42 @@ fn control_json(path: &Path, settings: &GameSettings) -> String {
     for (key, value) in ours {
         control.insert(key.to_string(), value);
     }
+    if let Some(value) = settings.opti_scaler_ui.clone() {
+        control.insert("optiScalerUi".to_string(), Value::String(value));
+    } else {
+        control.remove("optiScalerUi");
+    }
 
-    let document = Value::Object(control);
-    let mut text = serde_json::to_string_pretty(&document).unwrap_or_default();
+    serialize_control(&Value::Object(control))
+}
+
+// Pretty while it fits the mod's 4096 byte budget, compact when it does not.
+fn serialize_control(document: &Value) -> String {
+    let mut text = serde_json::to_string_pretty(document).unwrap_or_default();
     text.push('\n');
     if text.len() > CONTROL_MAX_BYTES {
-        text = serde_json::to_string(&document).unwrap_or_default();
+        text = serde_json::to_string(document).unwrap_or_default();
         text.push('\n');
     }
     text
+}
+
+// Preset imports edit the same file the settings form does, cap and all.
+pub fn update_control(
+    game_dir: &Path,
+    edit: impl FnOnce(&mut Map<String, Value>),
+) -> Result<(), String> {
+    let path = game_dir.join(CONTROL_FILE);
+    let mut control = existing_control(&path);
+    edit(&mut control);
+    let text = serialize_control(&Value::Object(control));
+    if text.len() > CONTROL_MAX_BYTES {
+        return Err(format!(
+            "the control file would be {} bytes, past the mod's 4096 byte limit, so it was not written",
+            text.len()
+        ));
+    }
+    replace_file(&path, text.as_bytes()).map(|_| ())
 }
 
 fn existing_control(path: &Path) -> Map<String, Value> {
@@ -274,6 +411,19 @@ fn ini_values(settings: &GameSettings) -> Vec<(&'static str, &'static str, Optio
         "GpuNameOverride",
         Some(on_off(settings.gpu_name_override)),
     ));
+    values.push(("Diagnostics", "Logging", Some(on_off(settings.write_log_file))));
+    values.push(("Overlay", "PinnedLatency", Some(on_off(settings.pinned_latency))));
+    values.push(("Overlay", "LatencyMonitor", Some(on_off(settings.latency_monitor))));
+    values.push(("Diagnostics", "LatencyProbe", Some(on_off(settings.latency_probe))));
+    values.push(("Keybinds", "ShowNote", Some(on_off(settings.show_note))));
+    for action in KEYBIND_ACTIONS {
+        let bound = settings
+            .keybinds
+            .get(action)
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty());
+        values.push(("Keybinds", action, bound));
+    }
     values
 }
 
@@ -746,6 +896,7 @@ Thing=7\r\n\
             multiplier: 3,
             dlss_sr_preset: 12,
             dlss_rr_preset: 6,
+            opti_scaler_ui: Some("optiscaler".to_string()),
             ..GameSettings::default()
         };
         write(&game, &settings).unwrap();
@@ -762,6 +913,13 @@ Thing=7\r\n\
         assert_eq!(control["xessModel"], 1);
         assert_eq!(control["optiScalerUi"], "optiscaler");
         assert_eq!(control["futureKey"]["flag"], true);
+
+        // optiScalerUi is ours now: unset means the mod default, key removed.
+        write(&game, &GameSettings::default()).unwrap();
+        let text = std::fs::read_to_string(game.join(CONTROL_FILE)).unwrap();
+        let control: Value = serde_json::from_str(&text).unwrap();
+        assert!(control.get("optiScalerUi").is_none());
+        assert_eq!(control["xessModel"], 1);
         let _ = std::fs::remove_dir_all(&game);
     }
 

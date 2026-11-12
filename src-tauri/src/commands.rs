@@ -1,4 +1,5 @@
 use crate::compat;
+use crate::dlss5;
 use crate::gamedir;
 use crate::appupdate;
 use crate::install;
@@ -746,6 +747,31 @@ pub fn write_settings(game_id: String, settings: GameSettings) -> Result<ApplyRe
 #[tauri::command(async)]
 pub fn read_status(game_id: String) -> Result<Option<StatusSummary>, String> {
     Ok(status::read(&game_work_dir(&game_id)?))
+}
+
+#[tauri::command(async)]
+pub fn dlss5_presets(game_id: String) -> Result<Vec<dlss5::PresetInfo>, String> {
+    dlss5::presets(&game_work_dir(&game_id)?)
+}
+
+#[tauri::command(async)]
+pub fn dlss5_save_preset(game_id: String, name: String) -> Result<dlss5::PresetInfo, String> {
+    dlss5::save_preset(&game_work_dir(&game_id)?, &name)
+}
+
+#[tauri::command(async)]
+pub fn dlss5_import(game_id: String, text: String) -> Result<dlss5::PresetInfo, String> {
+    dlss5::import(&game_work_dir(&game_id)?, &text)
+}
+
+#[tauri::command(async)]
+pub fn dlss5_delete_preset(game_id: String, name: String) -> Result<(), String> {
+    dlss5::delete_preset(&game_work_dir(&game_id)?, &name)
+}
+
+#[tauri::command(async)]
+pub fn dlss5_export_code(game_id: String) -> Result<String, String> {
+    dlss5::export_code(&game_work_dir(&game_id)?)
 }
 
 #[tauri::command(async)]

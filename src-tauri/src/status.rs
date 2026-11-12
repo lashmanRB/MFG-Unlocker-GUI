@@ -28,6 +28,15 @@ pub fn read(game_dir: &Path) -> Option<StatusSummary> {
         dlss_fps: integer(object, &["dlssFpsMilli"]) as f32 / 1000.0,
         last_set_options_result: signed(object, &["setOptionsResult", "lastSetOptionsResult"]) as i32,
         patch_route: text(object, &["route", "patchRoute"]),
+        latency_available: flag(object, &["latencyAvailable"]),
+        latency_state: integer(object, &["latencyState"]) as u32,
+        latency_mean_us: integer(object, &["latencyMeanUs"]),
+        latency_p99_us: integer(object, &["latencyP99Us"]),
+        latency_real_us: integer(object, &["latencyRealUs"]),
+        latency_game_us: integer(object, &["latencyGameUs"]),
+        latency_fg_us: integer(object, &["latencyFgUs"]),
+        latency_display_us: integer(object, &["latencyDisplayUs"]),
+        latency_age_ms: integer(object, &["latencyAgeMs"]),
     })
 }
 

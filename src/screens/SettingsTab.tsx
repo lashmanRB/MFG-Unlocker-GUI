@@ -13,14 +13,19 @@ import {
   flipMeteringChoices,
   flipMeteringValue,
   languageChoices,
+  latencyPacingChoices,
   modeChoices,
   multiplierChoices,
+  optiScalerUiChoices,
   vsyncChoices,
+  xemfgRoundingChoices,
 } from "../lib/options";
 import type { FlipMeteringChoice } from "../lib/options";
-import type { GameSettings } from "../lib/types";
+import type { GameEntry, GameSettings } from "../lib/types";
 import { Button } from "../components/Button";
 import { Callout } from "../components/Callout";
+import { Dlss5Tab } from "../components/Dlss5Tab";
+import { KeybindsTab } from "../components/KeybindsTab";
 import {
   NumberInput,
   RadioGroup,
@@ -57,16 +62,18 @@ function FileFlag({ label, present }: { label: string; present: boolean }) {
 }
 
 export function SettingsTab({
-  gameId,
+  game,
+  gpuFamily,
   onDirtyChange,
   onGuidedSetup,
 }: {
-  gameId: string;
+  game: GameEntry;
+  gpuFamily: string | null;
   onDirtyChange: (dirty: boolean) => void;
   onGuidedSetup: () => void;
 }) {
   const toast = useToast();
-  const { data, loading, error, reload } = useSettings(gameId);
+  const { data, loading, error, reload } = useSettings(game.id);
   const [form, setForm] = useState<GameSettings | null>(null);
   const [saved, setSaved] = useState<GameSettings | null>(null);
   const [saving, setSaving] = useState(false);
@@ -131,11 +138,16 @@ export function SettingsTab({
     form.mode === "dynamic"
       ? "Not used in dynamic mode: the dynamic target owns the frame rate."
       : "0 leaves the game's own limiter alone.";
+  // Off (1x) only exists on the RTX 30 and 20 routes.
+  const multiplierOptions =
+    gpuFamily === "ampere" || gpuFamily === "turing"
+      ? [{ value: 1, label: "Off (1x)" }, ...multiplierChoices]
+      : multiplierChoices;
 
   const save = async () => {
     setSaving(true);
     setSaveError(null);
-    const response = await attempt(() => api.writeSettings(gameId, form));
+    const response = await attempt(() => api.writeSettings(game.id, form));
     setSaving(false);
     if (!response.ok) {
       setSaveError(response.message);
@@ -197,7 +209,7 @@ export function SettingsTab({
                 <Field label="Multiplier" hint={multiplierHint}>
                   <Segmented
                     value={form.multiplier}
-                    options={multiplierChoices}
+                    options={multiplierOptions}
                     onChange={(multiplier) => update("multiplier", multiplier)}
                     disabled={form.mode !== "fixed"}
                     label="Multiplier"
@@ -358,6 +370,18 @@ export function SettingsTab({
                 checked={form.pinnedFps}
                 onChange={(checked) => update("pinnedFps", checked)}
               />
+              <ToggleField
+                label="Pinned latency"
+                hint="A latency row under the FPS readout, with its own pin. DX12 and Vulkan only."
+                checked={form.pinnedLatency}
+                onChange={(checked) => update("pinnedLatency", checked)}
+              />
+              <ToggleField
+                label="Latency monitor"
+                hint="Off hides the latency readout entirely."
+                checked={form.latencyMonitor}
+                onChange={(checked) => update("latencyMonitor", checked)}
+              />
             </div>
           </Section>
 
@@ -382,6 +406,23 @@ export function SettingsTab({
                 checked={form.gpuNameOverride}
                 onChange={(checked) => update("gpuNameOverride", checked)}
               />
+              <Field
+                label="OptiScaler menu"
+                htmlFor="settings-optiscaler-ui"
+                hint="Who owns the in-game menu when OptiScaler is installed. Mod default hides this menu once OptiScaler offers its plugin tab."
+              >
+                <Select
+                  id="settings-optiscaler-ui"
+                  value={form.optiScalerUi ?? ""}
+                  onChange={(value) => update("optiScalerUi", value === "" ? null : value)}
+                >
+                  {optiScalerUiChoices.map((choice) => (
+                    <option key={choice.value} value={choice.value}>
+                      {choice.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
             </div>
             {form.gpuNameOverride && (
               <Callout tone="warn" className="mt-3">
@@ -403,8 +444,132 @@ export function SettingsTab({
                 checked={form.generatedOnlyDebug}
                 onChange={(checked) => update("generatedOnlyDebug", checked)}
               />
+              <ToggleField
+                label="Write log file"
+                hint="The mod's runtime log. Applies at the next game start."
+                checked={form.writeLogFile}
+                onChange={(checked) => update("writeLogFile", checked)}
+              />
+              <ToggleField
+                label="Latency probe"
+                hint="Records latency events to a csv beside the log, up to 512 MB."
+                checked={form.latencyProbe}
+                onChange={(checked) => update("latencyProbe", checked)}
+              />
             </div>
           </Section>
+
+          <Section
+            title="XeMFG"
+            aside={<span className="text-[10.5px] text-ink-dim">experimental</span>}
+          >
+            <div className={fieldGrid}>
+              <ToggleField
+                label="XeMFG standalone"
+                hint="Runs XeSS frame generation without OptiScaler. Needs Intel's runtime in RTXMFG-XeSS beside the mod."
+                checked={form.xemfgStandalone}
+                onChange={(checked) => update("xemfgStandalone", checked)}
+              />
+              <Field label="Up to" htmlFor="settings-xemfg-frames">
+                <Select
+                  id="settings-xemfg-frames"
+                  value={form.xemfgFrames}
+                  onChange={(value) => update("xemfgFrames", Number(value))}
+                >
+                  {[2, 3, 4, 5, 6].map((count) => (
+                    <option key={count} value={count}>
+                      {count}x
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <ToggleField
+                label="Dynamic"
+                hint="Chases the dynamic target instead of a fixed count."
+                checked={form.xemfgDynamic}
+                onChange={(checked) => update("xemfgDynamic", checked)}
+              />
+              <Field
+                label="Dynamic target FPS"
+                htmlFor="settings-xemfg-target"
+                hint="0 follows the refresh rate. Also the FPS limit when used as a cap."
+              >
+                <NumberInput
+                  id="settings-xemfg-target"
+                  value={form.xemfgTargetFps}
+                  onChange={(value) => update("xemfgTargetFps", value)}
+                  min={0}
+                  max={1000}
+                />
+              </Field>
+              <Field label="Rounding" htmlFor="settings-xemfg-rounding" hint="How the dynamic count rounds toward the target.">
+                <Select
+                  id="settings-xemfg-rounding"
+                  value={form.xemfgRounding}
+                  onChange={(value) => update("xemfgRounding", Number(value))}
+                >
+                  {xemfgRoundingChoices.map((choice) => (
+                    <option key={choice.value} value={choice.value}>
+                      {choice.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Flip queue" htmlFor="settings-xemfg-flipqueue" hint="Paces each batch evenly. Off returns to the older pacing.">
+                <Select
+                  id="settings-xemfg-flipqueue"
+                  value={form.xemfgFlipQueue}
+                  onChange={(value) => update("xemfgFlipQueue", Number(value))}
+                >
+                  {latencyPacingChoices.map((choice) => (
+                    <option key={choice.value} value={choice.value}>
+                      {choice.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <ToggleField
+                label="Allow 1x"
+                hint="Lets dynamic turn frame generation off."
+                checked={form.xemfgAllow1x}
+                onChange={(checked) => update("xemfgAllow1x", checked)}
+              />
+              <ToggleField
+                label="Use target as cap"
+                hint="Holds the frame rate at the target with the FPS limit."
+                checked={form.xemfgTargetAsCap}
+                onChange={(checked) => update("xemfgTargetAsCap", checked)}
+              />
+              <Field label="Latency pacing" htmlFor="settings-latency-pacing" hint="Auto uses the driver's flip metering where it is offered.">
+                <Select
+                  id="settings-latency-pacing"
+                  value={form.latencyPacing}
+                  onChange={(value) => update("latencyPacing", Number(value))}
+                >
+                  {latencyPacingChoices.map((choice) => (
+                    <option key={choice.value} value={choice.value}>
+                      {choice.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+          </Section>
+
+          <KeybindsTab
+            keybinds={form.keybinds}
+            showNote={form.showNote}
+            onKeybinds={(next) => update("keybinds", next)}
+            onShowNote={(next) => update("showNote", next)}
+          />
+
+          <Dlss5Tab
+            game={game}
+            settings={form}
+            onChange={(patch) =>
+              setForm((current) => (current === null ? current : { ...current, ...patch }))
+            }
+          />
         </div>
       </div>
 

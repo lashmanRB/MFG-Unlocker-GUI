@@ -3,6 +3,7 @@ import type {
   AppUpdate,
   ApplyResult,
   AutoUpdateReport,
+  Dlss5Preset,
   GameEntry,
   GameSettings,
   InstallInfo,
@@ -79,4 +80,23 @@ export const api = {
 
   openPath: (path: string): Promise<void> =>
     isTauri ? invoke<void>("open_path", { path }) : mock.openPath(path),
+
+  dlss5Presets: (gameId: string): Promise<Dlss5Preset[]> =>
+    isTauri ? invoke<Dlss5Preset[]>("dlss5_presets", { gameId }) : mock.dlss5Presets(gameId),
+
+  dlss5SavePreset: (gameId: string, name: string): Promise<Dlss5Preset> =>
+    isTauri
+      ? invoke<Dlss5Preset>("dlss5_save_preset", { gameId, name })
+      : mock.dlss5SavePreset(gameId, name),
+
+  dlss5Import: (gameId: string, text: string): Promise<Dlss5Preset> =>
+    isTauri ? invoke<Dlss5Preset>("dlss5_import", { gameId, text }) : mock.dlss5Import(gameId, text),
+
+  dlss5DeletePreset: (gameId: string, name: string): Promise<void> =>
+    isTauri
+      ? invoke<void>("dlss5_delete_preset", { gameId, name })
+      : mock.dlss5DeletePreset(gameId, name),
+
+  dlss5ExportCode: (gameId: string): Promise<string> =>
+    isTauri ? invoke<string>("dlss5_export_code", { gameId }) : mock.dlss5ExportCode(gameId),
 };
