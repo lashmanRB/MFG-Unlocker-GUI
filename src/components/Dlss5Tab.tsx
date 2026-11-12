@@ -15,52 +15,6 @@ import { useToast } from "../hooks/useToast";
 
 const fieldGrid = "grid gap-x-5 gap-y-4 @2xl:grid-cols-2";
 
-// NumberInput only parses whole numbers, and the intensities move in 0.05 steps
-function DecimalInput({
-  value,
-  onChange,
-  id,
-  min,
-  max,
-  disabled,
-}: {
-  value: number;
-  onChange: (value: number) => void;
-  id?: string;
-  min: number;
-  max: number;
-  disabled?: boolean;
-}) {
-  const [draft, setDraft] = useState(String(value));
-
-  useEffect(() => {
-    // leave half-typed things like "-" or "0." alone until blur
-    const parsed = Number.parseFloat(draft);
-    if (Number.isFinite(parsed) && parsed !== value) setDraft(String(value));
-  }, [value, draft]);
-
-  return (
-    <input
-      id={id}
-      type="number"
-      inputMode="decimal"
-      value={draft}
-      min={min}
-      max={max}
-      step={0.05}
-      disabled={disabled}
-      onChange={(event) => {
-        const next = event.target.value;
-        setDraft(next);
-        const parsed = Number.parseFloat(next);
-        if (Number.isFinite(parsed) && parsed >= min && parsed <= max) onChange(parsed);
-      }}
-      onBlur={() => setDraft(String(value))}
-      className="mono h-8 w-full rounded-[5px] border border-line bg-elevated px-2 text-[12.5px] text-ink tabular-nums transition-colors duration-150 ease-out hover:border-line-strong disabled:opacity-45"
-    />
-  );
-}
-
 export function Dlss5Tab({
   game,
   settings,
@@ -234,12 +188,13 @@ export function Dlss5Tab({
               htmlFor="dlss5-overall"
               hint="Strength of the whole effect. 0 leaves the image untouched."
             >
-              <DecimalInput
+              <NumberInput
                 id="dlss5-overall"
                 value={settings.dlss5OverallIntensity}
                 onChange={(value) => onChange({ dlss5OverallIntensity: value })}
                 min={0}
                 max={1}
+                step={0.05}
                 disabled={off}
               />
             </Field>
@@ -248,12 +203,13 @@ export function Dlss5Tab({
               htmlFor="dlss5-structure"
               hint="How strongly edges and fine detail are reworked."
             >
-              <DecimalInput
+              <NumberInput
                 id="dlss5-structure"
                 value={settings.dlss5StructureIntensity}
                 onChange={(value) => onChange({ dlss5StructureIntensity: value })}
                 min={0}
                 max={2}
+                step={0.05}
                 disabled={off}
               />
             </Field>
@@ -262,12 +218,13 @@ export function Dlss5Tab({
               htmlFor="dlss5-tone"
               hint="How strongly colour and contrast are reworked."
             >
-              <DecimalInput
+              <NumberInput
                 id="dlss5-tone"
                 value={settings.dlss5ToneIntensity}
                 onChange={(value) => onChange({ dlss5ToneIntensity: value })}
                 min={0}
                 max={2}
+                step={0.05}
                 disabled={off}
               />
             </Field>
@@ -276,12 +233,13 @@ export function Dlss5Tab({
               htmlFor="dlss5-character"
               hint="How strongly faces and skin are reworked. -1 follows Structure."
             >
-              <DecimalInput
+              <NumberInput
                 id="dlss5-character"
                 value={settings.dlss5CharacterIntensity}
                 onChange={(value) => onChange({ dlss5CharacterIntensity: value })}
                 min={-1}
                 max={2}
+                step={0.05}
                 disabled={off}
               />
             </Field>

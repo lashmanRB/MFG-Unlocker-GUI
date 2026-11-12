@@ -75,31 +75,43 @@ interface NumberInputProps {
   id?: string;
   min: number;
   max: number;
+  step?: number;
   disabled?: boolean;
   className?: string;
 }
 
-export function NumberInput({ value, onChange, id, min, max, disabled, className }: NumberInputProps) {
+export function NumberInput({
+  value,
+  onChange,
+  id,
+  min,
+  max,
+  step = 1,
+  disabled,
+  className,
+}: NumberInputProps) {
   const [draft, setDraft] = useState(String(value));
 
   useEffect(() => {
-    if (Number.parseInt(draft, 10) !== value) setDraft(String(value));
-  }, [value, draft]);
+    // leave half-typed things like "-" or "0." alone until blur
+    const parsed = step === 1 ? Number.parseInt(draft, 10) : Number.parseFloat(draft);
+    if (Number.isFinite(parsed) && parsed !== value) setDraft(String(value));
+  }, [value, draft, step]);
 
   return (
     <input
       id={id}
       type="number"
-      inputMode="numeric"
+      inputMode={step === 1 ? "numeric" : "decimal"}
       value={draft}
       min={min}
       max={max}
-      step={1}
+      step={step}
       disabled={disabled}
       onChange={(event) => {
         const next = event.target.value;
         setDraft(next);
-        const parsed = Number.parseInt(next, 10);
+        const parsed = step === 1 ? Number.parseInt(next, 10) : Number.parseFloat(next);
         if (Number.isFinite(parsed) && parsed >= min && parsed <= max) onChange(parsed);
       }}
       onBlur={() => setDraft(String(value))}
