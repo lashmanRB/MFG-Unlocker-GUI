@@ -176,7 +176,7 @@
     },
     "3669870": {
       "name": "Control Resonant",
-      "verdict": "works-with-tweaks",
+      "verdict": "mixed",
       "notes": [
         {
           "text": "Game patch 1.4.0 broke MFG above 2x (frozen picture, 'Waiting for an active DLSS-G pipeline'); updating DLSS, Ray Reconstruction and Frame Generation DLLs to 310.9.1 via DLSS Swapper or NVIDIA override restored it.",
@@ -193,6 +193,10 @@
         {
           "text": "An alternative proxy route is bink2w64.dll: rename the game's original bink2w64.dll to bink2w64hooked.dll and give the mod the bink2w64.dll name; this worked for some players but not all.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/issues/64#issuecomment-5933480040"
+        },
+        {
+          "text": "One player fixed black screens with the latest Streamline package plus OptiScaler; another freezes the moment MFG is enabled, with no fix posted.",
+          "source": "https://www.reddit.com/r/nvidia/comments/1x9y2mq/live_dlss_preset_switching_mfg_unlocker_v16/"
         }
       ]
     },
@@ -239,6 +243,10 @@
         {
           "text": "v1.3.2 crashed the game when taking a screenshot, switching input method or alt-tabbing with 4x FG active.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/issues/25"
+        },
+        {
+          "text": "With DLSS 5 the hook stage had to be Present; on a 4070 Ti SUPER with path tracing and DLSS Performance, Dynamic MFG took the built-in benchmark from 105 to 133 fps (v1.7.0).",
+          "source": "https://www.reddit.com/r/DLSS/comments/1xf3p8n/dashdogys_universal_mfg_unlocker_v170_now/"
         }
       ]
     },
@@ -762,6 +770,20 @@
         }
       ]
     },
+    "1716740": {
+      "name": "Starfield",
+      "verdict": "works",
+      "notes": [
+        {
+          "text": "A player reports 3x and 4x MFG although the game natively offers only 2x Frame Generation.",
+          "source": "https://www.reddit.com/r/DLSS/comments/1xf3p8n/dashdogys_universal_mfg_unlocker_v170_now/"
+        },
+        {
+          "text": "Attribution caveat: the same player's daily setup is the rival MFGAdaUnlock mod, so the report may describe that tool instead.",
+          "source": "https://www.reddit.com/r/DLSS/comments/1xf3p8n/dashdogys_universal_mfg_unlocker_v170_now/"
+        }
+      ]
+    },
     "1622910": {
       "name": "Still Wakes the Deep",
       "verdict": "broken",
@@ -825,6 +847,10 @@
         {
           "text": "Foliage interpolation artifacts with mod-driven FG are reported here too; they also appear with native 2x at low base frame rates and are reduced by motion blur.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/issues/43#issuecomment-5700793789"
+        },
+        {
+          "text": "DLSS 5 only worked with the hook stage on Auto (after upscaling); a black screen was traced to an outdated nvngx_dlssg.dll and fixed by copying the newest Streamline DLLs into the game folders.",
+          "source": "https://www.reddit.com/r/DLSS/comments/1xf3p8n/dashdogys_universal_mfg_unlocker_v170_now/"
         }
       ]
     },
@@ -835,6 +861,16 @@
         {
           "text": "The doc lists dxgi.dll as the recommended proxy name based on working reports.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "1888930": {
+      "name": "The Last of Us Part I",
+      "verdict": "unknown",
+      "notes": [
+        {
+          "text": "The author says the standalone DLL cannot add Frame Generation to a game without native MFG; the OptiScaler plugin route should work but needs OptiScaler v10 builds, and no player confirmation was posted.",
+          "source": "https://www.reddit.com/r/nvidia/comments/1x9y2mq/live_dlss_preset_switching_mfg_unlocker_v16/"
         }
       ]
     },
@@ -893,6 +929,10 @@
         {
           "text": "Under Linux/Proton the mod reads gameFG=0 and gpuFamily=0 and its menu never opens; the author closed it as fixed in v1.7.1, but a player retry the same day still got a black screen with only the mod overlay, and Proton Experimental runs the game without MFG.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/issues/168#issuecomment-6829575945"
+        },
+        {
+          "text": "DLSS 5 only worked with the hook stage on Auto (after upscaling); Dynamic MFG held the high 90s fps but dipped into the low 70s in combat and larger cities.",
+          "source": "https://www.reddit.com/r/DLSS/comments/1xf3p8n/dashdogys_universal_mfg_unlocker_v170_now/"
         }
       ]
     },
