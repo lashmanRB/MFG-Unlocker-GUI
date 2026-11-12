@@ -5,6 +5,10 @@ use std::path::{Path, PathBuf};
 // The version the mod writes into its own control file; the parser ignores it.
 const CONTROL_VERSION: u32 = 13;
 
+// The mod reads and writes at most this many bytes and silently falls back to
+// defaults past it, so an oversized save must never reach the game folder.
+const CONTROL_MAX_BYTES: usize = 4096;
+
 pub fn read(game_dir: &Path) -> Result<GameSettings, String> {
     let control_path = game_dir.join(CONTROL_FILE);
     let ini_path = game_dir.join(UI_INI);
@@ -102,7 +106,10 @@ fn read_control(object: &Map<String, Value>, settings: &mut GameSettings) {
 
     if let Some(preset) = integer(object, "dlssgPreset") {
         if preset <= 3 {
-            settings.dlssg_preset = preset;
+            // v1.7.1 migrates a saved B to game/driver unless the marker says
+            // the preset was picked on purpose; show what the mod will apply
+            let marked = integer(object, "dlssgDefaults").unwrap_or(0) >= 1;
+            settings.dlssg_preset = if preset == 2 && !marked { 0 } else { preset };
         }
     }
     if let Some(preset) = integer(object, "dlssSrPreset") {
@@ -153,7 +160,14 @@ fn read_preferences(text: &str, settings: &mut GameSettings) {
 
 fn write_control(game_dir: &Path, settings: &GameSettings) -> Result<Option<String>, String> {
     let path = game_dir.join(CONTROL_FILE);
-    replace_file(&path, control_json(&path, settings).as_bytes())
+    let text = control_json(&path, settings);
+    if text.len() > CONTROL_MAX_BYTES {
+        return Err(format!(
+            "the control file would be {} bytes, past the mod's 4096 byte limit, so it was not written",
+            text.len()
+        ));
+    }
+    replace_file(&path, text.as_bytes())
 }
 
 // The mod keeps keys this app has no business throwing away (xessModel,
@@ -201,8 +215,13 @@ fn control_json(path: &Path, settings: &GameSettings) -> String {
         control.insert(key.to_string(), value);
     }
 
-    let mut text = serde_json::to_string_pretty(&Value::Object(control)).unwrap_or_default();
+    let document = Value::Object(control);
+    let mut text = serde_json::to_string_pretty(&document).unwrap_or_default();
     text.push('\n');
+    if text.len() > CONTROL_MAX_BYTES {
+        text = serde_json::to_string(&document).unwrap_or_default();
+        text.push('\n');
+    }
     text
 }
 
@@ -859,6 +878,42 @@ Thing=7\r\n\
         let text = std::fs::read_to_string(game.join(CONTROL_FILE)).unwrap();
         let control: Value = serde_json::from_str(&text).unwrap();
         assert_eq!(control["dlssgDefaults"], 2);
+        let _ = std::fs::remove_dir_all(&game);
+    }
+
+    #[test]
+    fn an_oversized_control_file_is_refused() {
+        let game = scratch("oversize");
+        let big = "x".repeat(5000);
+        std::fs::write(game.join(CONTROL_FILE), format!("{{\"foreign\": \"{big}\"}}\n")).unwrap();
+        let applied = write(&game, &GameSettings::default()).unwrap();
+        assert!(!applied.ok);
+        assert!(
+            applied.warnings.iter().any(|warning| warning.contains("4096")),
+            "{:?}",
+            applied.warnings
+        );
+        let text = std::fs::read_to_string(game.join(CONTROL_FILE)).unwrap();
+        assert!(text.contains("\"foreign\""), "the oversized file was replaced");
+        let _ = std::fs::remove_dir_all(&game);
+    }
+
+    #[test]
+    fn a_big_control_file_compacts_instead_of_failing() {
+        let game = scratch("compact");
+        let mut foreign = Map::new();
+        for i in 0..400 {
+            foreign.insert(format!("k{i}"), Value::from(1));
+        }
+        std::fs::write(
+            game.join(CONTROL_FILE),
+            serde_json::to_string(&Value::Object(foreign)).unwrap(),
+        )
+        .unwrap();
+        write(&game, &GameSettings::default()).unwrap();
+        let text = std::fs::read_to_string(game.join(CONTROL_FILE)).unwrap();
+        assert!(text.len() <= CONTROL_MAX_BYTES, "{}", text.len());
+        assert!(!text.contains("\n  "), "still pretty printed");
         let _ = std::fs::remove_dir_all(&game);
     }
 

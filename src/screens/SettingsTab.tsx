@@ -394,6 +394,7 @@ export function SettingsTab({
             <div className={fieldGrid}>
               <ToggleField
                 label="Interval logging"
+                hint="Per-frame timing lines in the mod's log. RTX 40 and 50 keep it on regardless."
                 checked={form.intervalLogging}
                 onChange={(checked) => update("intervalLogging", checked)}
               />

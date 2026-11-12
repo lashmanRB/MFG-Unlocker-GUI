@@ -769,7 +769,10 @@ export function SetupWizard({ game, onClose, onSaved }: SetupWizardProps) {
 
             {step.id === "debug" && (
               <div className="mt-4 divide-y divide-line/60 rounded-[5px] border border-line bg-raised">
-                <SettingRow label="Interval logging" hint="Per-frame timing lines in the mod's log.">
+                <SettingRow
+                  label="Interval logging"
+                  hint="Per-frame timing lines in the mod's log. RTX 40 and 50 keep it on regardless."
+                >
                   <div className="flex justify-end">
                     <ToggleField
                       label=""
