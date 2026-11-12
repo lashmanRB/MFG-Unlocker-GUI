@@ -891,8 +891,8 @@
           "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-6179907599"
         },
         {
-          "text": "Under Linux/Proton on v1.7.0 the game's own Frame Generation works but the mod reads gameFG=0 and gpuFamily=0 and its menu never opens; the author closed it as fixed in v1.7.1, unconfirmed.",
-          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/168"
+          "text": "Under Linux/Proton the mod reads gameFG=0 and gpuFamily=0 and its menu never opens; the author closed it as fixed in v1.7.1, but a player retry the same day still got a black screen with only the mod overlay, and Proton Experimental runs the game without MFG.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/168#issuecomment-6829575945"
         }
       ]
     },
