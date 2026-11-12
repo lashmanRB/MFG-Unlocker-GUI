@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-11",
+  "updated": "2026-11-12",
   "issuesUrl": "https://github.com/dashdogy/MFG-Unlocker/issues?q=is%3Aissue+label%3Acompatibility",
   "games": {
     "3768760": {
@@ -23,6 +23,14 @@
         {
           "text": "On v1.7.0 with dxgi.dll, selecting 3x freezes the 3D picture while menus keep drawing and the game still responds to input; alt-tabbing brings the picture back.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/issues/149"
+        },
+        {
+          "text": "The author closed the software-cursor menu report as fixed in v1.7.1; no player has confirmed it yet.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/78#issuecomment-6828012502"
+        },
+        {
+          "text": "The author closed the 3x freeze report as fixed in v1.7.1, and the release says RTX 40 no longer drops to 2x mid-game here; no player confirmation yet.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/149#issuecomment-6828016692"
         }
       ]
     },
@@ -139,6 +147,10 @@
         {
           "text": "The doc lists dxgi.dll as the recommended proxy name for this game.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        },
+        {
+          "text": "The author closed both menu reports as fixed in v1.7.1 and the release says the menu works again; no player has confirmed it yet.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/157#issuecomment-6828019771"
         }
       ]
     },
@@ -254,7 +266,7 @@
     },
     "2054970": {
       "name": "Dragon's Dogma 2",
-      "verdict": "works-with-tweaks",
+      "verdict": "mixed",
       "notes": [
         {
           "text": "The game crashes if MFG Unlocker is installed alone; install REFramework as dinput8.dll first and the mod as winmm.dll, which the reporter confirmed working.",
@@ -267,6 +279,14 @@
         {
           "text": "With the Dark Arisen expansion and a newer driver the game offers up to 6x, but the mod menu only allows Follow game or 2x manually; Follow game still applies 6x.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/issues/94"
+        },
+        {
+          "text": "A release-day report on v1.7.0: with winmm.dll alongside a REFramework nightly on an RTX 3090 the mod menu never appears and Backspace does nothing; issue #167 is still open with no reply.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/167"
+        },
+        {
+          "text": "The earlier DLSS 5 refusal at 5120x1440 (#160, v1.7.0) was closed by the author as fixed in v1.7.1, unconfirmed by players.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/160#issuecomment-6828143002"
         }
       ]
     },
@@ -659,6 +679,10 @@
         {
           "text": "Activating DLSS 5 in the mod menu crashes the game immediately on v1.7.0 (RTX 4070), while MFG alone works fine.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/issues/137"
+        },
+        {
+          "text": "The author closed the DLSS 5 activation crash as fixed in v1.7.1; no player has confirmed it yet.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/137#issuecomment-6828014603"
         }
       ]
     },
@@ -865,6 +889,10 @@
         {
           "text": "The Game Pass / Windows Store build stayed stuck at 'waiting for pipeline' while the Steam version worked on the same PC.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/issues/3#issuecomment-6179907599"
+        },
+        {
+          "text": "Under Linux/Proton on v1.7.0 the game's own Frame Generation works but the mod reads gameFG=0 and gpuFamily=0 and its menu never opens; the author closed it as fixed in v1.7.1, unconfirmed.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/168"
         }
       ]
     },
