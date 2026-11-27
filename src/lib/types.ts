@@ -158,6 +158,7 @@ export interface GameSettings {
   xemfgAllow1x: boolean;
   xemfgTargetAsCap: boolean;
   xemfgFlipQueue: number;
+  xemfgStreamline: number | null;
   latencyPacing: number;
   dlss5: boolean;
   dlss5HookStage: number;

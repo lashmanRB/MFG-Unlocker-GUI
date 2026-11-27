@@ -301,6 +301,7 @@ const baseSettings: GameSettings = {
   xemfgAllow1x: false,
   xemfgTargetAsCap: false,
   xemfgFlipQueue: 0,
+  xemfgStreamline: null,
   latencyPacing: 0,
   dlss5: false,
   dlss5HookStage: 0,

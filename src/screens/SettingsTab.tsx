@@ -470,7 +470,11 @@ export function SettingsTab({
                 checked={form.xemfgStandalone}
                 onChange={(checked) => update("xemfgStandalone", checked)}
               />
-              <Field label="Up to" htmlFor="settings-xemfg-frames">
+              <Field
+                label="Up to"
+                htmlFor="settings-xemfg-frames"
+                hint="Fixed when XeMFG runs behind the game's own DLSS Frame Generation."
+              >
                 <Select
                   id="settings-xemfg-frames"
                   value={form.xemfgFrames}
@@ -483,16 +487,30 @@ export function SettingsTab({
                   ))}
                 </Select>
               </Field>
+              <Field
+                label="Standalone route"
+                htmlFor="settings-xemfg-route"
+                hint="Auto runs behind the game's own DLSS Frame Generation in DirectX 12 games, where the frame count is fixed; takeover always takes the swap chain over."
+              >
+                <Select
+                  id="settings-xemfg-route"
+                  value={form.xemfgStreamline === 2 ? "2" : "auto"}
+                  onChange={(value) => update("xemfgStreamline", value === "2" ? 2 : null)}
+                >
+                  <option value="auto">Auto (behind DLSS Frame Generation)</option>
+                  <option value="2">Swap chain takeover</option>
+                </Select>
+              </Field>
               <ToggleField
                 label="Dynamic"
-                hint="Chases the dynamic target instead of a fixed count."
+                hint="Chases the dynamic target instead of a fixed count. Not used behind DLSS Frame Generation."
                 checked={form.xemfgDynamic}
                 onChange={(checked) => update("xemfgDynamic", checked)}
               />
               <Field
                 label="Dynamic target FPS"
                 htmlFor="settings-xemfg-target"
-                hint="0 follows the refresh rate. Also the FPS limit when used as a cap."
+                hint="0 follows the refresh rate. Also the FPS limit when used as a cap. Not used behind DLSS Frame Generation."
               >
                 <NumberInput
                   id="settings-xemfg-target"

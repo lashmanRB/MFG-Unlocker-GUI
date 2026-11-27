@@ -256,8 +256,10 @@ mouse 4/5; clearing a binding leaves the action unbound, and the on-screen note 
 **Menu** gains the pinned latency row and the latency monitor switch, **Diagnostics** the write-log
 switch and the latency probe csv, and **Compatibility** the OptiScaler menu ownership choice (both
 menus, this menu, or the OptiScaler tab only). **XeMFG** carries the experimental standalone block:
-frame count, dynamic target, rounding, flip queue and pacing. It needs Intel's XeSS runtime in
-`RTXMFG-XeSS` beside the mod; the app does not ship it.
+frame count, dynamic target, rounding, flip queue, pacing and the route choice. Auto runs behind
+the game's own DLSS Frame Generation in DirectX 12, where the frame count is fixed; takeover always
+takes the swap chain over. It needs Intel's XeSS runtime in `RTXMFG-XeSS` beside the mod; the app
+does not ship it.
 
 **DLSS 5** appears once `nvngx_dlssnr.dll` is found beside the executable: the hook stage, model,
 the look strengths, resolution scale, half rate and pass count, plus the preset store. Presets are

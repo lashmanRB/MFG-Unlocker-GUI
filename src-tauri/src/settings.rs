@@ -164,6 +164,11 @@ fn read_control(object: &Map<String, Value>, settings: &mut GameSettings) {
     settings.xemfg_allow1x = flag(object, "xemfgAllow1x");
     settings.xemfg_target_as_cap = flag(object, "xemfgTargetAsCap");
     settings.xemfg_flip_queue = integer(object, "xemfgFlipQueue").unwrap_or(0).min(2);
+    // only 2 means the swap chain takeover; anything else is the automatic route
+    settings.xemfg_streamline = match integer(object, "xemfgStreamline") {
+        Some(value) if value == 2 => Some(2),
+        _ => None,
+    };
     settings.latency_pacing = integer(object, "latencyPacing").unwrap_or(0).min(2);
     settings.dlss5 = flag(object, "dlss5");
     settings.dlss5_hook_stage = integer(object, "dlss5HookStage").unwrap_or(0).min(3);
@@ -328,6 +333,11 @@ fn control_json(path: &Path, settings: &GameSettings) -> String {
         control.insert("optiScalerUi".to_string(), Value::String(value));
     } else {
         control.remove("optiScalerUi");
+    }
+    if let Some(value) = settings.xemfg_streamline {
+        control.insert("xemfgStreamline".to_string(), Value::from(value));
+    } else {
+        control.remove("xemfgStreamline");
     }
 
     serialize_control(&Value::Object(control))
@@ -1072,6 +1082,25 @@ Thing=7\r\n\
         let text = std::fs::read_to_string(game.join(CONTROL_FILE)).unwrap();
         assert!(text.len() <= CONTROL_MAX_BYTES, "{}", text.len());
         assert!(!text.contains("\n  "), "still pretty printed");
+        let _ = std::fs::remove_dir_all(&game);
+    }
+
+    #[test]
+    fn the_xemfg_route_is_written_and_cleared() {
+        let game = scratch("xemfgroute");
+        let settings = GameSettings {
+            xemfg_streamline: Some(2),
+            ..GameSettings::default()
+        };
+        write(&game, &settings).unwrap();
+        let text = std::fs::read_to_string(game.join(CONTROL_FILE)).unwrap();
+        let control: Value = serde_json::from_str(&text).unwrap();
+        assert_eq!(control["xemfgStreamline"], 2);
+
+        write(&game, &GameSettings::default()).unwrap();
+        let text = std::fs::read_to_string(game.join(CONTROL_FILE)).unwrap();
+        let control: Value = serde_json::from_str(&text).unwrap();
+        assert!(control.get("xemfgStreamline").is_none());
         let _ = std::fs::remove_dir_all(&game);
     }
 
