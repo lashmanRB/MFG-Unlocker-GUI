@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-12",
+  "updated": "2026-11-22",
   "issuesUrl": "https://github.com/dashdogy/MFG-Unlocker/issues?q=is%3Aissue+label%3Acompatibility",
   "games": {
     "3768760": {
@@ -45,6 +45,10 @@
         {
           "text": "The upstream compatibility table nonetheless lists version.dll as the recommended proxy name based on working reports.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        },
+        {
+          "text": "A player switched to XeMFG because even 2x DLSS frame generation shows artifacts in some scenes while XeMFG shows none, at the cost of frame pacing that feels less smooth; the owner notes the game ships DLSS-G 310.2.1, which stays at 2x by design.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/66#issuecomment-7083802964"
         }
       ]
     },
@@ -59,6 +63,10 @@
         {
           "text": "The doc lists Endfield under the OptiScaler route and says it needs the project's own OptiScaler build.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        },
+        {
+          "text": "On V1.7.1 the Backspace menu never appears in the Vulkan build (RTX 3050 Laptop, WINHTTP.dll beside the exe); the v1.7.2 fix claim credits hooking Vulkan renderers that live in a DLL but no reporter has confirmed it, and the table still routes the game through the OptiScaler build.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/176"
         }
       ]
     },
@@ -129,6 +137,10 @@
         {
           "text": "3x and 4x FG freeze the picture while 2x stays normal (v1.3.3, RTX 4070, driver 616.92).",
           "source": "https://github.com/dashdogy/MFG-Unlocker/issues/38"
+        },
+        {
+          "text": "On v1.7.1 with version.dll and winmm.dll 4x freezes and drops the game with no error after anywhere from five minutes to over an hour on an RTX 4080 SUPER, while native 2x works; no v1.7.2 report yet.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/198"
         }
       ]
     },
@@ -197,6 +209,10 @@
         {
           "text": "One player fixed black screens with the latest Streamline package plus OptiScaler; another freezes the moment MFG is enabled, with no fix posted.",
           "source": "https://www.reddit.com/r/nvidia/comments/1x9y2mq/live_dlss_preset_switching_mfg_unlocker_v16/"
+        },
+        {
+          "text": "On the author's OptiScaler build (MFGUnlocker.asi v1.7.2, XeFG 3x out) v1.7.2 ignores the frame limiter, running 134 to 140 fps against a 115.5 cap with unstable pacing and higher latency than v1.7.1; Show Detected UI in OptiScaler's frame generation debug turns the screen solid magenta.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/205"
         }
       ]
     },
@@ -211,6 +227,10 @@
         {
           "text": "Vegetation artifacts with mod-driven MFG are reported by multiple players; one calls DLSS Enabler (FSR FG) the only clean MFG option for now, another found RTX Encore visibly better.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/issues/43#issuecomment-6325143327"
+        },
+        {
+          "text": "On v1.7.1 the menu never appeared with d3d12.dll while the game's own frame generation settings still worked; the owner traced it to CrimsonCollection.asi owning the game's swap chain and said removing it brings the menu back, unconfirmed by the player.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/175"
         }
       ]
     },
@@ -226,7 +246,7 @@
     },
     "1091500": {
       "name": "Cyberpunk 2077",
-      "verdict": "works-with-tweaks",
+      "verdict": "mixed",
       "notes": [
         {
           "text": "With Cyber Engine Tweaks (version.dll) and RED4ext (winmm.dll) installed those proxy names are taken, and dinput8.dll does not load the mod; dxgi.dll worked on a GOG copy.",
@@ -247,6 +267,10 @@
         {
           "text": "With DLSS 5 the hook stage had to be Present; on a 4070 Ti SUPER with path tracing and DLSS Performance, Dynamic MFG took the built-in benchmark from 105 to 133 fps (v1.7.0).",
           "source": "https://www.reddit.com/r/DLSS/comments/1xf3p8n/dashdogys_universal_mfg_unlocker_v170_now/"
+        },
+        {
+          "text": "On v1.7.2 the game's own exit crash report is gone, but the same player drops to desktop at random while playing, about three or four times in two hours after the mod update; a second player on an RTX 3080 reports the same symptom.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/202"
         }
       ]
     },
@@ -468,6 +492,20 @@
         }
       ]
     },
+    "2561580": {
+      "name": "Horizon Zero Dawn Remastered",
+      "verdict": "broken",
+      "notes": [
+        {
+          "text": "On build 1.7.2.19 an RTX 3070 Ti player still gets failure 174, mask 0x4C and providerCovered 0, and the game offers no DLSS frame generation at all; disabling the Intel iGPU so only the RTX 3070 Ti enumerates made no difference.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/186#issuecomment-7197292915"
+        },
+        {
+          "text": "The pre-game launcher shows DLSS frame generation thanks to the GPU name override while in game only FSR frame generation appears; the original report is on v1.7.1 with the game's Streamline host 2.2.1.0 and no other mods.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/186"
+        }
+      ]
+    },
     "2677660": {
       "name": "Indiana Jones and the Great Circle",
       "verdict": "works",
@@ -479,6 +517,20 @@
         {
           "text": "Dynamic MFG is unavailable on the Vulkan path per the upstream doc.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "3164330": {
+      "name": "Infinity Nikki",
+      "verdict": "broken",
+      "notes": [
+        {
+          "text": "XeMFG 3x worked on v1.7.1, and since v1.7.2 a multiplier change has no effect from either the mod menu or the game (RTX 2060 12GB, driver 621.24).",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/203"
+        },
+        {
+          "text": "A second player notes RTX 20 and RTX 30 cards need the GPU name spoofed before the game offers DLSS frame generation at all, and the release itself admits that variant of XeMFG behind DLSS Frame Generation is new and untested.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/203#issuecomment-7119456427"
         }
       ]
     },
@@ -499,6 +551,20 @@
         {
           "text": "Listed upstream for the OptiScaler plugin route rather than a proxy DLL; tester reports got the menu or frame generation working that way.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        }
+      ]
+    },
+    "2000890": {
+      "name": "MechWarrior 5: Clans",
+      "verdict": "mixed",
+      "notes": [
+        {
+          "text": "Standalone XeMFG sticks at 2x on v1.7.2 whatever the in-game multiplier or the mod panel says, which the player describes as a new bug compared with v1.7.1.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/207"
+        },
+        {
+          "text": "The same player prefers XeMFG for image quality and runs Metro 2033 Redux Next Gen at 4k 120 fps through OptiScaler's XeFG, while native DLSS MFG at 4x and 6x still hitches in combat here; the thread names an RTX 3080, the hardware the release says the standalone route has not been tested on.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/207"
         }
       ]
     },
@@ -541,6 +607,10 @@
         {
           "text": "The doc lists version.dll as the recommended proxy, with dinput8.dll and d3d12.dll also loading.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        },
+        {
+          "text": "The v1.7.2 menu and DLSS 5 mip-chain fixes stay owner-claimed: the linked #180 report is an RTX 3070 with DLSS 310.9.1 swapped in and never mentions ReShade, and #171's mip-chain refusal has no post-release confirmation; one v1.7.1 player reports everything good with only a cosmetic Follow readout.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/173"
         }
       ]
     },
@@ -716,7 +786,7 @@
     },
     "3764200": {
       "name": "Resident Evil Requiem",
-      "verdict": "works",
+      "verdict": "mixed",
       "notes": [
         {
           "text": "DX12 with version.dll: 4x MFG working without issues (DLSSG 310.9.0 via NVIDIA App override); dinput8.dll is reserved for REFramework.",
@@ -725,6 +795,10 @@
         {
           "text": "The doc lists dxgi.dll as also loading, and an OptiScaler route is listed for this game.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        },
+        {
+          "text": "On v1.7.2 selecting DLSS 5 freezes the game for a second and the provider never loads (log: DLSS 5 direct provider open failed, result 0xBAD00002); the same DLL works for that player in Control Resonant and Death Stranding 2 while Pragmata crashes.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/201"
         }
       ]
     },
@@ -908,7 +982,7 @@
     },
     "292030": {
       "name": "The Witcher 3: Wild Hunt",
-      "verdict": "works-with-tweaks",
+      "verdict": "mixed",
       "notes": [
         {
           "text": "Install as winmm.dll beside witcher3.exe in bin\\x64_dx12; for Path Traced Hair enable HairWorks, path tracing and Path Traced Hair in game, and fully restart after changing Path Traced Hair or Frame Generation.",
@@ -933,6 +1007,10 @@
         {
           "text": "DLSS 5 only worked with the hook stage on Auto (after upscaling); Dynamic MFG held the high 90s fps but dipped into the low 70s in combat and larger cities.",
           "source": "https://www.reddit.com/r/DLSS/comments/1xf3p8n/dashdogys_universal_mfg_unlocker_v170_now/"
+        },
+        {
+          "text": "On v1.7.2 3x and 4x reproducibly hang the GPU with DXGI_ERROR_DEVICE_HUNG 20 to 30 seconds into play on an RTX 4080 SUPER, while a clean no-mod baseline stayed up for about ten minutes with the game's own 2x; an access violation inside winmm.dll followed a frame generation toggle, and [RtxHair] Universal=0 made no difference.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/208"
         }
       ]
     },
@@ -947,6 +1025,10 @@
         {
           "text": "A v1.3.3 Hotfix 2 report got no menu on Backspace and could not select a mode.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/issues/60"
+        },
+        {
+          "text": "On v1.7.2 with WINMM.dll and standalone XeFG (no OptiScaler, no ASI loader) the selected count never applies: the generated-frame count stays at 1 while the panel cycles 4, 5, 2 and 3, and the status file shows route=pending ready=0 with routeFailure=8.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/204"
         }
       ]
     },
@@ -971,6 +1053,10 @@
         {
           "text": "The doc lists version.dll as the recommended proxy (dxgi.dll also loads); dinput8.dll, winmm.dll and d3d12.dll gave no menu on V1.3.",
           "source": "https://github.com/dashdogy/MFG-Unlocker/blob/main/docs/compatibility.md"
+        },
+        {
+          "text": "On v1.7.2 with version.dll an RTX 4060 Laptop player on driver 621.01 cannot turn MFG on at all; only 2x frame generation works and the panel stays waiting for an active DLSS-G pipeline.",
+          "source": "https://github.com/dashdogy/MFG-Unlocker/issues/211"
         }
       ]
     },
